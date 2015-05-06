@@ -1,0 +1,9 @@
+this is the template.
+<div layout="row" data-ng-repeat="value in pend.parameters">
+  <div flex="10" layout layout-align="center center"><span  ng-bind-html="value.nameHtml"></span></div>
+  <md-slider md-mini flex min="{{value.min}}" max="{{value.max}}" step="{{value.step}}" ng-model="value.value" ></md-slider>
+  <div flex="15" layout layout-align="center center">{{ value.value | number:2 }}</div>
+</div>
+<!--div layout="row">
+  {{min}} {{max}} {{step}}
+</div -->
