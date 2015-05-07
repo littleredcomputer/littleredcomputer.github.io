@@ -25,7 +25,11 @@ Vestibulum eu nisl ipsum. Phasellus lobortis felis ligula. Nullam lobortis odio 
 
             <div layout="column" flex=33>
               <value-sliders></value-sliders>
-              <md-button class="md-fab">Go</md-button>
+              <md-button ng-click="pend.go();" class="md-fab">Go</md-button>
+              {{pend.parameters[0].value | number:2 }}
+              {{pend.parameters[1].value | number:2 }}
+              {{pend.parameters[2].value | number:2 }}
+              {{pend.parameters[3].value | number:2 }}
             </div>
           </div>
         </md-content>
