@@ -52,4 +52,16 @@
 
   </div>
 
+  <!-- KaTeX -->
+  <script type="text/javascript">
+   // grab all elements in DOM with the class 'equation'
+   var tex = document.getElementsByClassName("equation");
+   // for each element, render the expression attribute
+   Array.prototype.forEach.call(tex, function(el) {
+       console.log('formatting an equation', el);
+       katex.render(el.getAttribute("data-expr"), el);
+   });
+   console.log('katex loaded');
+  </script>
+b
 </footer>
