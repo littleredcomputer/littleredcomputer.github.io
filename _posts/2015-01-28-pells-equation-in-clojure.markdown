@@ -2,8 +2,7 @@
 layout: post
 title: "Pell's equation in Clojure"
 date: 2015-01-28 20:35:59 -0800
-comments: true
-categories:
+categories: math clojure
 ---
 
 And what, after all, is the point of implementing continued fractions
@@ -74,7 +73,7 @@ of functions to reveal something interesting about it. It's the
 last line that makes it all worthwhile.
 {% highlight clojure %}
 (-> 29 pell-solution println)
-; 9801/1830
+; 9801/1820
 {% endhighlight %}
 which means that
 <span class="equation" data-expr="9801^2 - 29\cdot1820^2 = 1"></span>.
