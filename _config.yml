@@ -11,4 +11,10 @@ twitter_username: c0linsmith
 github_username:  littleredcomputer
 
 # Build settings
+
 markdown: kramdown
+
+# markdown: redcarpet
+# redcarpet:
+#   extensions: ['smart', 'fenced_code_blocks']
+

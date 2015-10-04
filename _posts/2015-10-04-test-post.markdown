@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "It's a test poast!"
+date:   2015-10-04 11:06:20
+categories: jekyll update
+---
+
+Hey ya. "This is the time," she breathed, "and this is the record of the
+time." It's `like` this, and like that ya know. This *is* now.
+This **was** then.
+
+~~~ruby
+foo('bar','baz')
+~~~

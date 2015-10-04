@@ -14,7 +14,7 @@ for integer solutions of
 <span class="equation" data-expr="n"></span>
 is a nonsquare integer. As Wikipedia explains, the solutions to
 this equation are found among the continued fraction convergents to
-\sqrt n
+<span class="equation" data-expr="\sqrt n"></span>
 . So first we need to generate that stream of
 convergents. [Wik][wik-sqrt] gives us the algorithm, which we render in Clojure
 as follows:
