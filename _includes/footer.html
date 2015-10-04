@@ -52,16 +52,15 @@
 
   </div>
 
+  <!-- Processing -->
+  <script src="/public/sketches/processing-1.4.8.min.js"></script>
   <!-- KaTeX -->
+  <script src="/public/katex/katex.min.js"></script>
   <script type="text/javascript">
-   // grab all elements in DOM with the class 'equation'
-   var tex = document.getElementsByClassName("equation");
-   // for each element, render the expression attribute
-   Array.prototype.forEach.call(tex, function(el) {
-       console.log('formatting an equation', el);
-       katex.render(el.getAttribute("data-expr"), el);
-   });
-   console.log('katex loaded');
+    var tex = document.getElementsByClassName("equation");
+    Array.prototype.forEach.call(tex, function(el) {
+      katex.render(el.getAttribute("data-expr"), el);
+    });
   </script>
 
 </footer>
