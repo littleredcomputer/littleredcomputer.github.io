@@ -3,6 +3,7 @@ layout: post
 title: "Pell's equation in Clojure"
 date: 2015-01-28 20:35:59 -0800
 categories: math clojure
+using: katex
 ---
 
 And what, after all, is the point of implementing continued fractions

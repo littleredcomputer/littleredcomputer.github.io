@@ -52,15 +52,12 @@
 
   </div>
 
-  <!-- Processing -->
-  <script src="/public/sketches/processing-1.4.8.min.js"></script>
-  <!-- KaTeX -->
-  <script src="/public/katex/katex.min.js"></script>
-  <script type="text/javascript">
-    var tex = document.getElementsByClassName("equation");
-    Array.prototype.forEach.call(tex, function(el) {
-      katex.render(el.getAttribute("data-expr"), el);
-    });
-  </script>
+  {% if page.using contains 'processing' %}
+    {% include processing.html %}
+  {% endif %}
+
+  {% if page.using contains 'katex' %}
+    {% include katex.html %}
+  {% endif %}
 
 </footer>

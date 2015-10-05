@@ -4,6 +4,7 @@ title: "Processing.js with the kids"
 date: 2015-01-19 14:10:58 -0800
 comments: true
 categories:
+using: processing
 ---
 
 So one way to kick this off might be to see if we can embed a

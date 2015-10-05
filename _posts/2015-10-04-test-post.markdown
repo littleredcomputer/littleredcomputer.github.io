@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "It's a test poast!"
+title:  "It&rsquo;s a test poast!"
 date:   2015-10-04 11:06:20
 categories: jekyll update
 ---
@@ -8,6 +8,20 @@ categories: jekyll update
 Hey ya. "This is the time," she breathed, "and this is the record of the
 time." It's `like` this, and like that ya know. This *is* now.
 This **was** then.
+
+
+> So is it an excerpt if there are two newlines? And we
+> can carry on in the same vein?
+>
+> With one blank line what happens? And we are carrying on.
+
+
+Now we're back to regular old text. Hey ya. "This is the time," she breathed, "and this is the record of the
+time." It's `like` this, and like that ya know. This *is* now. Hey ya. "This is the time," she breathed, "and this is the record of the
+time." It's `like` this, and like that ya know. This *is* now. Now consider
+the en--dash, or even---for the fatuous---the em dash. Do they work?
+
+
 
 ~~~ruby
 foo('bar','baz')
