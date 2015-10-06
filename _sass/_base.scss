@@ -136,9 +136,11 @@ blockquote {
  */
 pre,
 code {
+  /* begin colin */
   font-size: 15px;
   line-height: 1.2;
   letter-spacing: -1px;
+  /* end colin */
     border: 1px solid $grey-color-light;
     border-radius: 3px;
     background-color: #eef;
