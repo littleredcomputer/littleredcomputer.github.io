@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl }}">
     <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 
-    <!-- KaTeX -->
-    <link rel="stylesheet" href="/public/katex/katex.min.css">
+    {% if page.using contains 'd3' %}
+      {% include d3.html %}
+    {% endif %}
+
+
+    {% if page.using contains 'katex' %}
+      <!-- KaTeX -->
+      <link rel="stylesheet" href="/public/katex/katex.min.css">
+    {% endif %}
+
 </head>
