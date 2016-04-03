@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Differential equations in JavaScript"
-date:   2015-10-04 11:06:20
+date:   2016-04-03 11:00:00
 categories: jekyll update
 using: katex
 ---
@@ -16,8 +16,13 @@ conditions. For each mouse motion we solve the DE from scratch
 and plot it with d3.
 
 Solution:
-<div id='graph2'></div>
+<div id='graph1'></div>
 Phase space (parametric plot of y and y&prime;):
-<div id='graph3'></div>
+<div id='graph2'></div>
 
 <script src="/public/js/odex-demo-bundle.js"></script>
+<script>
+  var a = odexdemo.airy();
+  a.setup();
+  a.draw();
+</script>
