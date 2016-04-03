@@ -27,6 +27,10 @@ g.axis {
   stroke: orange;
 }
 
+.line.Lo {
+  stroke: darkorange;
+}
+
 circle.graph-point {
   fill: steelblue;
 }
