@@ -8,6 +8,10 @@ function airy() {
   var id = initialData.slice();
   var g1 = new graph.Graph({element: '#graph1', width: 500, height: 350, points: false});
   var g2 = new graph.Graph({element: '#graph2', width: 500, height: 350, points: false});
+  var s2 = new odex.Solver(2);
+  s2.denseOutput = true;
+  s2.absoluteTolerance = s2.relativeTolerance = 1e-10;
+  var airy = function(x,y,yp) { yp[0] = y[1]; yp[1] = x * y[0]; }
 
   function setup() {
     g1.axes([-15,5], [-.5, .75]);
@@ -29,10 +33,6 @@ function airy() {
   }
 
   function draw() {
-    var s2 = new odex.Solver(2);
-    s2.denseOutput = true;
-    s2.absoluteTolerance = s2.relativeTolerance = 1e-10;
-    var airy = function(x,y,yp) { yp[0] = y[1]; yp[1] = x * y[0]; }
     var apts = [];
     var bpts = [];
     s2.solve(airy, -15, id, 5, s2.grid(0.05, function(x, y) {
@@ -51,6 +51,16 @@ function lorenz() {
   var initialData = [1,1,1];
   var id = initialData.slice
   var g1 = new graph.Graph({element: '#graph1', width: 500, height: 500, points: false});
+  var s = new odex.Solver(3);
+  s.denseOutput = true;
+  s.absoluteTolerance = s.relativeTolerance = 1e-10;
+  function L(sigma, rho, beta) {
+    return function(x, y, yp) {
+      yp[0] = sigma * (y[1] - y[0]);
+      yp[1] = y[0] * (rho - y[2]) - y[1];
+      yp[2] = y[0] * y[1] - beta * y[2];
+    }
+  };
   function setup() {
     g1.axes([-30,30], [0, 50]);
     id = initialData.slice();
@@ -64,16 +74,6 @@ function lorenz() {
     draw();
   }
   function draw() {
-    var s = new odex.Solver(3);
-    s.denseOutput = true;
-    s.absoluteTolerance = s.relativeTolerance = 1e-10;
-    function L(sigma, rho, beta) {
-      return function(x, y, yp) {
-        yp[0] = sigma * (y[1] - y[0]);
-        yp[1] = y[0] * (rho - y[2]) - y[1];
-        yp[2] = y[0] * y[1] - beta * y[2];
-      }
-    };
     xpts = [];
     s.solve(L(10,28,8/3), 0, id, 20, s.grid(0.005, function(x, y) {
       xpts.push([y[1], y[2]]);

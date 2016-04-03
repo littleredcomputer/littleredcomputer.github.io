@@ -14,7 +14,8 @@ explore the [Lorenz strange attractor][lor]:
 <div class="equation" data-expr="\displaystyle z'=xy-\beta z"></div>
 
 Move the mouse around the graph to perturb the initial conditions a
-bit. You can see the sensitive dependence on initial conditions as
+bit. (Slower is better, to watch the dynamics shift.)
+You can see the sensitive dependence on initial conditions as
 the imaginary point decides which of the two lobes to hang around in
 and how long to stay there!
 
