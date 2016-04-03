@@ -29,6 +29,7 @@ Fetch some data?
 <div id="data"></div>
 <div id="data2"></div>
 
+<script src="/public/js/old-graph.js"></script>
 <script>
  var g = new Graph({element: '#data', width: 600, height: 300});
  var h = new Graph({element: '#data2', width: 600, height: 300});
