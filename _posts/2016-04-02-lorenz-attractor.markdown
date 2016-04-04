@@ -8,6 +8,7 @@ using: katex
 
 Let's try the [odex][odex] JavaScript library in the browser to
 explore the [Lorenz strange attractor][lor]:
+
 <div class="equation" data-expr="\displaystyle x' = \sigma(y-x)"></div>
 <div class="equation" data-expr="\displaystyle y' = x(\rho-z)-y"></div>
 <div class="equation" data-expr="\displaystyle z'=xy-\beta z"></div>

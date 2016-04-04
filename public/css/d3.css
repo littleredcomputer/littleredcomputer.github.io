@@ -31,6 +31,23 @@ g.axis {
   stroke: darkorange;
 }
 
+.line.Pred {
+  stroke: salmon;
+  opacity: .8;
+  stroke-width: 2px;
+}
+
+.line.Prey {
+  stroke: slateblue;
+  opacity: .6;
+  stroke-width: 2px;
+}
+
+.line.Phase {
+  stroke: purple;
+  stroke-width: 3px;
+}
+
 circle.graph-point {
   fill: steelblue;
 }
