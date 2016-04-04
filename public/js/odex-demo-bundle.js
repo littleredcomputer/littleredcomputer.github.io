@@ -9838,8 +9838,12 @@ var Solver = (function () {
         var F = function (x, y, yp) {
             var yp1 = yp.slice(1);
             var ret = f(x, y.slice(1), yp1);
-            yp.splice.apply(yp, [1, _this.n].concat(yp1));
-            return ret;
+            if (ret instanceof Array)
+                yp.splice.apply(yp, [1, _this.n].concat(ret));
+            else if (ret === false)
+                return false;
+            else
+                yp.splice.apply(yp, [1, _this.n].concat(yp1));
         };
         var odxcor = function () {
             var acceptStep = function (n) {
@@ -10375,7 +10379,6 @@ var odex = require('odex');
 var graph = require('./graph');
 var d3 = require('d3');
 
-
 function airy() {
   var initialData = [0.2782174909, 0.2723742043];
   var id = initialData.slice();
@@ -10384,7 +10387,7 @@ function airy() {
   var s2 = new odex.Solver(2);
   s2.denseOutput = true;
   s2.absoluteTolerance = s2.relativeTolerance = 1e-10;
-  var airy = function(x,y,yp) { yp[0] = y[1]; yp[1] = x * y[0]; }
+  var airy = function(x,y) { return [y[1], x * y[0]]; }
 
   function setup() {
     g1.axes([-15,5], [-.5, .75]);
@@ -10428,10 +10431,12 @@ function lorenz() {
   s.denseOutput = true;
   s.absoluteTolerance = s.relativeTolerance = 1e-10;
   function L(sigma, rho, beta) {
-    return function(x, y, yp) {
-      yp[0] = sigma * (y[1] - y[0]);
-      yp[1] = y[0] * (rho - y[2]) - y[1];
-      yp[2] = y[0] * y[1] - beta * y[2];
+    return function(x, y) {
+      return [
+        sigma * (y[1] - y[0]),
+        y[0] * (rho - y[2]) - y[1],
+        y[0] * y[1] - beta * y[2]
+      ];
     }
   };
   function setup() {
