@@ -2,7 +2,7 @@
 layout: post
 title:  "Lorenz equation in JavaScript"
 date:   2016-04-03 13:15:00
-categories: jekyll update
+categories: math odex js
 using: katex
 ---
 

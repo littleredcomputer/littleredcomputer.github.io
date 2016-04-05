@@ -6,24 +6,6 @@ categories: jekyll update
 using: d3
 ---
 
-Hey ya. "This is the time," she breathed, "and this is the record of the
-time." It's `like` this, and like that ya know. This *is* now.
-This **was** then.
-
-
-> So is it an excerpt if there are two newlines? And we
-> can carry on in the same vein?
->
-> With one blank line what happens? And we are carrying on.
-
-
-Now we're back to regular old text. Hey ya. "This is the time," she
-breathed, "and this is the record of the time." It's `like` this, and
-like that ya know. This *is* now. Hey ya. "This is the time," she
-breathed, "and this is the record of the time." It's `like` this, and
-like that ya know. This *is* now. Now consider the en--dash, or
-even---for the fatuous---the em dash. Do they work?
-
 Fetch some data?
 
 <div id="data"></div>
@@ -48,12 +30,3 @@ Fetch some data?
  var Q = { t: 100, dt: 1/100, omega: 2 * Math.sqrt(9.8), a: 0.1, theta_0: 1, thetadot_0: 1e-10 };
  fetch(Q, h);
 </script>
-
-{% highlight ruby %}
-foo('bar','baz!')
-{% endhighlight %}
-
-{% highlight python %}
-def foo(a):
-  return a+1
-{% endhighlight %}

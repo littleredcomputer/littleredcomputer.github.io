@@ -2,7 +2,7 @@
 layout: post
 title:  "Lotka-Volterra equations in JavaScript"
 date:   2016-04-03 21:15:00
-categories: jekyll update
+categories: math odex js
 using: katex
 ---
 
