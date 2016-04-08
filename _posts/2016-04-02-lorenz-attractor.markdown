@@ -32,5 +32,5 @@ Solution:
   l.draw();
 </script>
 
-[odex]: https://www.npmjs.com/package/
+[odex]: https://www.npmjs.com/package/odex
 [lor]: https://en.wikipedia.org/wiki/Lorenz_system
