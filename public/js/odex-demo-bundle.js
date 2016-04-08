@@ -186,7 +186,6 @@ function predatorPrey () {
     var y = event.offsetY
     initialData[0] = 3 * x / sz
     initialData[1] = 2 - 2 * y / sz
-    console.log(initialData)
     draw()
   }
   function setup () {
