@@ -1,8 +1,7 @@
-'use strict'
-
 var browserify = require('browserify')
 var gulp = require('gulp')
-// var ts = require('gulp-typescript')
+var ts = require('gulp-typescript')
+var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
 var buffer = require('vinyl-buffer')
 // var gutil = require('gulp-util')
@@ -14,7 +13,8 @@ function make_bundle (src, name) {
     entries: src,
     standalone: name
   }).bundle()
-      .pipe(source(src.replace(/\.js$/, '-bundle.js')))
+      .pipe(source(src))
+      .pipe(rename({extname: '.bundle.js'}))
       .pipe(buffer())
       .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(sourcemaps.write('./'))
@@ -30,6 +30,16 @@ function make_bundle (src, name) {
 //   .pipe(gulp.dest('../public'))
 // })
 
-gulp.task('default', function () {
+gulp.task('js', function () {
   make_bundle('./js/odex-demo.js', 'odexdemo')
 })
+
+gulp.task('ts', function () {
+  gulp.src('js/odex-demo.ts')
+  .pipe(ts({
+    noImplicitAny: false
+  }))
+  .pipe(gulp.dest('./foo'))
+})
+
+gulp.task('default', ['js'])

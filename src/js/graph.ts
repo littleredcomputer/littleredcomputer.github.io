@@ -1,3 +1,5 @@
+/// <reference path="typings/main/definitions/d3/index.d.ts" />
+
 import d3 = require('d3')
 
 export class Graph {
@@ -59,7 +61,7 @@ export class Graph {
 
   draw = (data: [number, number][], cls?: string) => {
     cls = cls || 'default'
-    let xf = this.wrap_pi ? Graph.wrap_pi : x => x
+    let xf: (a: number) => number = this.wrap_pi ? Graph.wrap_pi : x => x
     if (this.points) {
       this.svg.selectAll('circle.graph-point')
       .data(data)

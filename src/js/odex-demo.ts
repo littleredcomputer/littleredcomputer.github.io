@@ -1,5 +1,3 @@
-/// <referencexx path="../typings/main/definitions/d3/index.d.ts" />
-
 import {Solver} from './node_modules/odex/src/odex';
 import {Graph} from './graph'
 
@@ -53,7 +51,7 @@ export class Lorenz {
   static L = (sigma: number, rho: number, beta: number) => (x: number, y: number[]) => [
     sigma * (y[1] - y[0]),
     y[0] * (rho - y[2]) - y[1],
-    y[0] * y[1] - beta * y[2] 
+    y[0] * y[1] - beta * y[2]
   ]
 
   constructor(elt: string) {
