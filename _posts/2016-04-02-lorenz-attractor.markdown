@@ -27,9 +27,7 @@ Solution:
 
 <script src="/public/js/odex-demo-bundle.js"></script>
 <script>
-  var l = odexdemo.lorenz();
-  l.setup();
-  l.draw();
+  var l = new odexdemo.Lorenz('graph1').draw();
 </script>
 
 [odex]: https://www.npmjs.com/package/odex

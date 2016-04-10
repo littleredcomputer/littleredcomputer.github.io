@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.odexdemo = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.odexdemot = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 var d3 = require('d3');
 var Graph = (function () {
@@ -10291,7 +10291,15 @@ exports.Solver = Solver;
 },{}],4:[function(require,module,exports){
 "use strict";
 var odex_1 = require('./node_modules/odex/src/odex');
-var graph_1 = require('./graph');
+var graph_t_1 = require('./graph-t');
+var DifferentialEquation = (function () {
+    function DifferentialEquation() {
+    }
+    DifferentialEquation.prototype.setup = function () { };
+    DifferentialEquation.prototype.draw = function () { };
+    return DifferentialEquation;
+}());
+;
 var Airy = (function () {
     function Airy(elt1, elt2) {
         var _this = this;
@@ -10318,8 +10326,8 @@ var Airy = (function () {
         this.id = this.initialData.slice();
         this.solver = new odex_1.Solver(2);
         this.solver.denseOutput = true;
-        this.g1 = new graph_1.Graph('#' + elt1, 500, 350);
-        this.g2 = new graph_1.Graph('#' + elt2, 500, 350);
+        this.g1 = new graph_t_1.Graph('#' + elt1, 500, 350);
+        this.g2 = new graph_t_1.Graph('#' + elt2, 500, 350);
         document.getElementById(elt1).onmousemove = this.tweak;
         document.getElementById(elt2).onmousemove = this.tweak;
         this.g1.axes([-15, 5], [-0.5, 0.75]);
@@ -10346,7 +10354,7 @@ var Lorenz = (function () {
             }));
             _this.g1.draw(xpts, 'Lo');
         };
-        this.g1 = new graph_1.Graph('#' + elt, 500, 500);
+        this.g1 = new graph_t_1.Graph('#' + elt, 500, 500);
         this.solver = new odex_1.Solver(3);
         this.solver.denseOutput = true;
         this.id = this.initialData.slice();
@@ -10371,6 +10379,7 @@ var PredatorPrey = (function () {
         this.tweak = function (e) {
             var x = e.offsetX;
             var y = e.offsetY;
+            console.log(_this.g.x.invert(e.offsetX), _this.g.y.invert(e.offsetY));
             _this.initialData[0] = 3 * x / _this.sz;
             _this.initialData[1] = 2 - 2 * y / _this.sz;
             _this.draw();
@@ -10389,8 +10398,8 @@ var PredatorPrey = (function () {
             _this.phase.draw(tpts, 'Phase');
         };
         this.solver.denseOutput = true;
-        this.g = new graph_1.Graph('#' + elt1, this.sz, this.sz);
-        this.phase = new graph_1.Graph('#' + elt2, this.sz, this.sz);
+        this.g = new graph_t_1.Graph('#' + elt1, this.sz, this.sz);
+        this.phase = new graph_t_1.Graph('#' + elt2, this.sz, this.sz);
         this.g.axes([0, 25], [0, 4]);
         this.phase.axes([0, 3], [0, 2]);
         document.querySelector('#' + elt1 + ' svg').onmousemove = this.tweak;
@@ -10404,6 +10413,6 @@ var PredatorPrey = (function () {
 }());
 exports.PredatorPrey = PredatorPrey;
 
-},{"./graph":1,"./node_modules/odex/src/odex":3}]},{},[4])(4)
+},{"./graph-t":1,"./node_modules/odex/src/odex":3}]},{},[4])(4)
 });
-//# sourceMappingURL=odex-demo-bundle.js.map
+//# sourceMappingURL=odex-demo-t-bundle.js.map

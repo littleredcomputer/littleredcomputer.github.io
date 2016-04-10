@@ -22,7 +22,5 @@ Phase space (parametric plot of y and y&prime;):
 
 <script src="/public/js/odex-demo-bundle.js"></script>
 <script>
-  var a = odexdemo.airy();
-  a.setup();
-  a.draw();
+  new odexdemo.Airy('graph1', 'graph2').draw();
 </script>

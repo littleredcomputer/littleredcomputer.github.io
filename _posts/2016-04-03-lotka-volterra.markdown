@@ -19,9 +19,7 @@ phase portrait of the system.
 
 <script src="/public/js/odex-demo-bundle.js"></script>
 <script>
-  var l = odexdemo.predatorPrey();
-  l.setup();
-  l.draw();
+  new odexdemo.PredatorPrey('graph', 'phase').draw();
 </script>
 
 [odex]: https://www.npmjs.com/package/
