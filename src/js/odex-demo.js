@@ -30,20 +30,18 @@ var Airy = (function (_super) {
         this.tweak = function (e) {
             var x = e.offsetX - 500;
             var p = x / 2000;
-            _this.id[0] = _this.initialData[0] + p;
             var y = e.offsetY - 200;
             var q = y / 2000;
-            _this.id[1] = _this.initialData[1] + q;
-            _this.draw();
+            _this.draw([_this.initialData[0] + p, _this.initialData[1] + q]);
         };
-        this.id = this.initialData.slice();
         this.g[0].axes([-15, 5], [-0.5, 0.75]);
         this.g[1].axes([-0.5, 0.5], [-1.5, 1.5]);
     }
-    Airy.prototype.draw = function () {
+    Airy.prototype.draw = function (initialData) {
+        if (initialData === void 0) { initialData = this.initialData; }
         var apts = [];
         var bpts = [];
-        this.solver.solve(this.eq, -15, this.id, 5, this.solver.grid(0.05, function (x, y) {
+        this.solver.solve(this.eq, -15, initialData, 5, this.solver.grid(0.05, function (x, y) {
             apts.push([x, y[0]]);
             bpts.push([y[0], y[1]]);
         }));
@@ -63,17 +61,14 @@ var Lorenz = (function (_super) {
         this.tweak = function (e) {
             var xt = (e.offsetX - 500) / 2000;
             var yt = (e.offsetY - 500) / 2000;
-            _this.id[0] = _this.initialData[0] + xt;
-            _this.id[1] = _this.initialData[1] + yt;
-            _this.draw();
+            _this.draw([_this.initialData[0] + xt, _this.initialData[1] + yt]);
         };
-        this.id = this.initialData.slice();
         this.g[0].axes([-30, 30], [0, 50]);
-        this.id = this.initialData.slice();
     }
-    Lorenz.prototype.draw = function () {
+    Lorenz.prototype.draw = function (initialData) {
+        if (initialData === void 0) { initialData = this.initialData; }
         var xpts = [];
-        this.solver.solve(this.eq, 0, this.id, 20, this.solver.grid(0.005, function (x, y) {
+        this.solver.solve(this.eq, 0, initialData, 20, this.solver.grid(0.005, function (x, y) {
             xpts.push([y[1], y[2]]);
         }));
         this.g[0].draw(xpts, 'Lo');
@@ -96,18 +91,17 @@ var PredatorPrey = (function (_super) {
         this.tweak = function (e) {
             var x = e.offsetX;
             var y = e.offsetY;
-            _this.initialData[0] = 3 * x / PredatorPrey.sz;
-            _this.initialData[1] = 2 - 2 * y / PredatorPrey.sz;
-            _this.draw();
+            _this.draw([3 * x / PredatorPrey.sz, 2 - 2 * y / PredatorPrey.sz]);
         };
         this.g[0].axes([0, 25], [0, 4]);
         this.g[1].axes([0, 3], [0, 2]);
     }
-    PredatorPrey.prototype.draw = function () {
+    PredatorPrey.prototype.draw = function (initialData) {
+        if (initialData === void 0) { initialData = this.initialData; }
         var xpts = [];
         var ypts = [];
         var tpts = [];
-        this.solver.solve(this.eq, 0, this.initialData, 25, this.solver.grid(0.01, function (x, y) {
+        this.solver.solve(this.eq, 0, initialData, 25, this.solver.grid(0.01, function (x, y) {
             xpts.push([x, y[0]]);
             ypts.push([x, y[1]]);
             tpts.push([y[0], y[1]]);
@@ -127,10 +121,34 @@ exports.PredatorPrey = PredatorPrey;
 var VanDerPol = (function (_super) {
     __extends(VanDerPol, _super);
     function VanDerPol(elt1, elt2) {
-        _super.call(this, 2, [elt1, elt2], 400, 400);
+        var _this = this;
+        _super.call(this, 2, [elt1, elt2], VanDerPol.sz, VanDerPol.sz);
         this.initialData = [1, 1];
-        this.eq = VanDerPol.V(1);
+        this.end = 25;
+        this.eq = VanDerPol.V(3);
+        this.tweak = function (e) {
+            var x = e.offsetX;
+            var y = e.offsetY;
+            _this.draw([_this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
+        };
+        this.g[0].axes([0, this.end], [-3, 3]);
+        this.g[1].axes([-3, 3], [-3, 3]);
     }
+    VanDerPol.prototype.draw = function (initialData) {
+        if (initialData === void 0) { initialData = this.initialData; }
+        var xpts = [];
+        var ypts = [];
+        var tpts = [];
+        this.solver.solve(this.eq, 0, initialData, this.end, this.solver.grid(0.1, function (x, y) {
+            xpts.push([x, y[0]]);
+            ypts.push([x, y[1]]);
+            tpts.push([y[0], y[1]]);
+        }));
+        this.g[0].draw(xpts, 'Pred');
+        this.g[0].draw(ypts, 'Prey');
+        this.g[1].draw(tpts);
+    };
+    VanDerPol.sz = 400;
     VanDerPol.V = function (e) { return function (x, y) { return [
         y[1],
         ((1 - Math.pow(y[0], 2)) * y[1] - y[0]) / e
