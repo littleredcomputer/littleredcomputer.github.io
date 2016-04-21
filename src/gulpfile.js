@@ -1,6 +1,5 @@
 var browserify = require('browserify')
 var gulp = require('gulp')
-var debug = require('gulp-debug')
 var ts = require('gulp-typescript')
 var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
@@ -32,7 +31,11 @@ function make_bundle (src, name) {
 // })
 
 gulp.task('js', function () {
+  // bundle with dependencies
   make_bundle('./js/odex-demo.js', 'odexdemo')
+  // copy sources, so sourcemaps will work
+  gulp.src(['js/**/*.js', '!js/node_modules/**'])
+    .pipe(gulp.dest('../public'))
 })
 
 gulp.task('ts', function () {
