@@ -35,7 +35,7 @@ gulp.task('js', function () {
   make_bundle('./js/odex-demo.js', 'odexdemo')
   // copy sources, so sourcemaps will work
   gulp.src(['js/**/*.js', '!js/node_modules/**'])
-    .pipe(gulp.dest('../public'))
+    .pipe(gulp.dest('../public/js'))
 })
 
 gulp.task('ts', function () {
