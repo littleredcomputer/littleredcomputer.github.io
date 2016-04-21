@@ -1,34 +1,43 @@
-import {Solver} from './node_modules/odex/src/odex';
+import {Solver, Derivative} from './node_modules/odex/src/odex'
 import {Graph} from './graph'
 
-export class Airy {
-  initialData: number[] = [0.2782174909, 0.2723742043]
-  g1: Graph
-  g2: Graph
+class DifferentialEquationView {
+  g: Graph[] = []
   solver: Solver
-  id: number[]
 
-  constructor (elt1: string, elt2: string) {
-    this.id = this.initialData.slice()
-    this.solver = new Solver(2)
-    this.solver.denseOutput = true
-    this.g1 = new Graph('#' + elt1, 500, 350)
-    this.g2 = new Graph('#' + elt2, 500, 350)
-    document.getElementById(elt1).onmousemove = this.tweak
-    document.getElementById(elt2).onmousemove = this.tweak
-    this.g1.axes([-15, 5], [-0.5, 0.75])
-    this.g2.axes([-0.5, 0.5], [-1.5, 1.5])
+  constructor(dim: number, elements: string[], width: number, height: number) {
+    elements.map(e => {
+      this.solver = new Solver(dim)
+      this.solver.denseOutput = true
+      this.g.push(new Graph('#' + e, width, height))
+      ; (<SVGElement> document.querySelector('#' + e + ' svg')).onmousemove = e => this.tweak(e)
+    })
   }
 
-  draw = () => {
-    var apts: [number, number][] = []
+  tweak = (e: MouseEvent) => console.log('tweak unimplemented')
+}
+
+export class Airy extends DifferentialEquationView {
+  initialData: number[] = [0.2782174909, 0.2723742043]
+  id: number[]
+  eq: Derivative = (x, y) => [y[1], x * y[0]]
+
+  constructor(elt0: string, elt1: string) {
+    super(2, [elt0, elt1], 500, 350)
+    this.id = this.initialData.slice()
+    this.g[0].axes([-15, 5], [-0.5, 0.75])
+    this.g[1].axes([-0.5, 0.5], [-1.5, 1.5])
+  }
+
+  draw() {
+    let apts: [number, number][] = []
     let bpts: [number, number][] = []
-    this.solver.solve((x, y) => [y[1], x * y[0]], -15, this.id, 5, this.solver.grid(0.05, (x: number, y: number[]) => {
+    this.solver.solve(this.eq, -15, this.id, 5, this.solver.grid(0.05, (x: number, y: number[]) => {
       apts.push([x, y[0]])
       bpts.push([y[0], y[1]])
     }))
-    this.g1.draw(apts, 'Ai')
-    this.g2.draw(bpts)
+    this.g[0].draw(apts, 'Ai')
+    this.g[1].draw(bpts)
   }
 
   tweak = (e: MouseEvent) => {
@@ -42,10 +51,8 @@ export class Airy {
   }
 }
 
-export class Lorenz {
+export class Lorenz extends DifferentialEquationView {
   initialData: number[] = [1, 1, 1]
-  g1: Graph
-  solver: Solver
   id: number[]
 
   static L = (sigma: number, rho: number, beta: number) => (x: number, y: number[]) => [
@@ -54,13 +61,12 @@ export class Lorenz {
     y[0] * y[1] - beta * y[2]
   ]
 
+  eq: Derivative = Lorenz.L(10, 28, 8 / 3)
+
   constructor(elt: string) {
-    this.g1 = new Graph('#' + elt, 500, 500)
-    this.solver = new Solver(3)
-    this.solver.denseOutput = true
+    super(3, [elt], 500, 500)
     this.id = this.initialData.slice()
-    document.getElementById(elt).onmousemove = this.tweak
-    this.g1.axes([-30, 30], [0, 50])
+    this.g[0].axes([-30, 30], [0, 50])
     this.id = this.initialData.slice()
   }
 
@@ -72,56 +78,64 @@ export class Lorenz {
     this.draw()
   }
 
-  draw = () => {
+  draw() {
     let xpts: [number, number][] = []
-    this.solver.solve(Lorenz.L(10, 28, 8 / 3), 0, this.id, 20, this.solver.grid(0.005, (x, y) => {
+    this.solver.solve(this.eq, 0, this.id, 20, this.solver.grid(0.005, (x, y) => {
       xpts.push([y[1], y[2]])
     }))
-    this.g1.draw(xpts, 'Lo')
+    this.g[0].draw(xpts, 'Lo')
   }
 }
 
-export class PredatorPrey {
-  sz = 400
+export class PredatorPrey extends DifferentialEquationView {
+  static sz = 400
   initialData = [1, 1]
-  g: Graph
-  phase: Graph
-  solver = new Solver(2)
 
   static LV = (a: number, b: number, c: number, d: number) => (x: number, y: number[]) => [
-    a * y[0] - b*y[0] * y[1],
+    a * y[0] - b * y[0] * y[1],
     c * y[0] * y[1] - d * y[1]
   ]
 
-  constructor(elt1: string, elt2: string) {
-    this.solver.denseOutput = true
-    this.g = new Graph('#' + elt1, this.sz, this.sz)
-    this.phase = new Graph('#' + elt2, this.sz, this.sz)
-    this.g.axes([0, 25],  [0, 4])
-    this.phase.axes([0, 3], [0, 2])
-    ; (<SVGElement> document.querySelector('#' + elt1 + ' svg')).onmousemove = this.tweak
-    ; (<SVGElement> document.querySelector('#' + elt2 + ' svg')).onmousemove = this.tweak
+  eq: Derivative = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1)
+
+  constructor(elt0: string, elt1: string) {
+    super(2, [elt0, elt1], PredatorPrey.sz, PredatorPrey.sz)
+    this.g[0].axes([0, 25],  [0, 4])
+    this.g[1].axes([0, 3], [0, 2])
   }
 
   tweak = (e: MouseEvent) => {
     let x = e.offsetX
     let y = e.offsetY
-    this.initialData[0] = 3*x / this.sz
-    this.initialData[1] = 2 - 2 * y / this.sz
+    this.initialData[0] = 3 * x / PredatorPrey.sz
+    this.initialData[1] = 2 - 2 * y / PredatorPrey.sz
     this.draw()
   }
 
-  draw = () => {
+  draw() {
     let xpts: [number, number][] = []
     let ypts: [number, number][] = []
     let tpts: [number, number][] = []
-    this.solver.solve(PredatorPrey.LV(2 / 3, 4 / 3, 1, 1), 0, this.initialData, 25, this.solver.grid(0.01, (x, y) => {
+    this.solver.solve(this.eq, 0, this.initialData, 25, this.solver.grid(0.01, (x, y) => {
       xpts.push([x, y[0]])
       ypts.push([x, y[1]])
       tpts.push([y[0], y[1]])
     }))
-    this.g.draw(xpts, 'Pred')
-    this.g.draw(ypts, 'Prey')
-    this.phase.draw(tpts, 'Phase')
+    this.g[0].draw(xpts, 'Pred')
+    this.g[0].draw(ypts, 'Prey')
+    this.g[1].draw(tpts, 'Phase')
+  }
+}
+
+export class VanDerPol extends DifferentialEquationView {
+  initialData = [1, 1]
+
+  static V: ((e: number) => Derivative) = e => (x, y) => [
+    y[1],
+    ((1 - Math.pow(y[0], 2)) * y[1] - y[0]) / e
+  ]
+  eq = VanDerPol.V(1)
+  constructor(elt1: string, elt2: string) {
+    super(2, [elt1, elt2], 400, 400)
   }
 }

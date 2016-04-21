@@ -1,5 +1,6 @@
 var browserify = require('browserify')
 var gulp = require('gulp')
+var debug = require('gulp-debug')
 var ts = require('gulp-typescript')
 var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
@@ -35,7 +36,7 @@ gulp.task('js', function () {
 })
 
 gulp.task('ts', function () {
-  gulp.src('js/odex-demo.ts')
+  gulp.src('js/*.ts')
   .pipe(ts({
     noImplicitAny: false
   }))

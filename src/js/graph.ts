@@ -3,8 +3,8 @@
 import d3 = require('d3')
 
 export class Graph {
-  width: number;
-  height: number;
+  width: number
+  height: number
   x: d3.scale.Linear<number, number>
   y: d3.scale.Linear<number, number>
   xAxis: d3.svg.Axis
@@ -33,7 +33,7 @@ export class Graph {
       .y(d => this.y(d[1]))
   }
 
-  static wrap_pi = (a0: number) => {
+  static wrap_pi(a0: number) {
     const PI = Math.PI
     let a = a0
     if (-PI < a || a >= PI) {
@@ -43,13 +43,13 @@ export class Graph {
     return a
   }
 
-  axes = (xDomain: [number, number], yDomain: [number, number]) => {
+  axes(xDomain: [number, number], yDomain: [number, number]) {
     this.x.domain(xDomain)
     this.y.domain(yDomain)
     this.drawAxes()
   }
 
-  drawAxes = () => {
+  drawAxes() {
     this.svg.append('g')
       .attr('class', 'x axis')
       .attr('transform', 'translate(0,' + this.height + ')')
@@ -59,7 +59,7 @@ export class Graph {
       .call(this.yAxis)
   }
 
-  draw = (data: [number, number][], cls?: string) => {
+  draw(data: [number, number][], cls?: string) {
     cls = cls || 'default'
     let xf: (a: number) => number = this.wrap_pi ? Graph.wrap_pi : x => x
     if (this.points) {

@@ -7,40 +7,6 @@ var Graph = (function () {
         this.wrap_pi = false;
         this.points = false;
         this.margin = { left: 30, right: 10, top: 5, bottom: 30 };
-        this.axes = function (xDomain, yDomain) {
-            _this.x.domain(xDomain);
-            _this.y.domain(yDomain);
-            _this.drawAxes();
-        };
-        this.drawAxes = function () {
-            _this.svg.append('g')
-                .attr('class', 'x axis')
-                .attr('transform', 'translate(0,' + _this.height + ')')
-                .call(_this.xAxis);
-            _this.svg.append('g')
-                .attr('class', 'y axis')
-                .call(_this.yAxis);
-        };
-        this.draw = function (data, cls) {
-            cls = cls || 'default';
-            var xf = _this.wrap_pi ? Graph.wrap_pi : function (x) { return x; };
-            if (_this.points) {
-                _this.svg.selectAll('circle.graph-point')
-                    .data(data)
-                    .enter()
-                    .append('circle')
-                    .attr('cx', function (d) { return _this.x(d[0]); })
-                    .attr('cy', function (d) { return _this.y(xf(d[1])); })
-                    .attr('r', 1);
-            }
-            else {
-                _this.svg.selectAll('path.' + cls).remove();
-                _this.svg.append('path').attr('class', cls)
-                    .datum(data)
-                    .classed({ line: true, cls: true })
-                    .attr('d', _this.line);
-            }
-        };
         this.width = width - this.margin.left - this.margin.right;
         this.height = height - this.margin.top - this.margin.bottom;
         this.x = d3.scale.linear().range([0, this.width]);
@@ -64,6 +30,41 @@ var Graph = (function () {
             a = a < PI ? a : a - 2 * PI;
         }
         return a;
+    };
+    Graph.prototype.axes = function (xDomain, yDomain) {
+        this.x.domain(xDomain);
+        this.y.domain(yDomain);
+        this.drawAxes();
+    };
+    Graph.prototype.drawAxes = function () {
+        this.svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + this.height + ')')
+            .call(this.xAxis);
+        this.svg.append('g')
+            .attr('class', 'y axis')
+            .call(this.yAxis);
+    };
+    Graph.prototype.draw = function (data, cls) {
+        var _this = this;
+        cls = cls || 'default';
+        var xf = this.wrap_pi ? Graph.wrap_pi : function (x) { return x; };
+        if (this.points) {
+            this.svg.selectAll('circle.graph-point')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr('cx', function (d) { return _this.x(d[0]); })
+                .attr('cy', function (d) { return _this.y(xf(d[1])); })
+                .attr('r', 1);
+        }
+        else {
+            this.svg.selectAll('path.' + cls).remove();
+            this.svg.append('path').attr('class', cls)
+                .datum(data)
+                .classed({ line: true, cls: true })
+                .attr('d', this.line);
+        }
     };
     return Graph;
 }());
@@ -9625,24 +9626,6 @@ exports.Graph = Graph;
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
 },{}],3:[function(require,module,exports){
-/**
- * An implementation of ODEX, by E. Hairer and G. Wanner, ported from the Fortran ODEX.F.
- * The original work carries the BSD 2-clause license, and so does this.
- *
- * Copyright (c) 2016 Colin Smith.
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
- * disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
- * following disclaimer in the documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 "use strict";
 (function (Outcome) {
     Outcome[Outcome["Converged"] = 0] = "Converged";
@@ -9701,14 +9684,12 @@ var Solver = (function () {
             }
         };
     };
-    // Make a 1-based 2D array, with r rows and c columns. The initial values are undefined.
     Solver.dim2 = function (r, c) {
         var a = new Array(r + 1);
         for (var i = 1; i <= r; ++i)
             a[i] = Solver.dim(c);
         return a;
     };
-    // Generate step size sequence and return as a 1-based array of length n.
     Solver.stepSizeSequence = function (nSeq, n) {
         var a = new Array(n + 1);
         a[0] = 0;
@@ -9742,11 +9723,8 @@ var Solver = (function () {
         }
         return a;
     };
-    // Integrate the differential system represented by f, from x to xEnd, with initial data y.
-    // solOut, if provided, is called at each integration step.
     Solver.prototype.solve = function (f, x, y0, xEnd, solOut) {
         var _this = this;
-        // Make a copy of y0, 1-based. We leave the user's parameters alone so that they may be reused if desired.
         var y = [0].concat(y0);
         var dz = Solver.dim(this.n);
         var yh1 = Solver.dim(this.n);
@@ -9763,13 +9741,12 @@ var Solver = (function () {
             throw new Error('denseOutput requires a solution observer function');
         if (this.interpolationFormulaDegree <= 0 || this.interpolationFormulaDegree >= 7)
             throw new Error('bad interpolationFormulaDegree');
-        var icom = [0]; // icom will be 1-based, so start with a pad entry.
+        var icom = [0];
         var nrdens = 0;
         if (this.denseOutput) {
             if (this.denseComponents) {
                 for (var _i = 0, _a = this.denseComponents; _i < _a.length; _i++) {
                     var c = _a[_i];
-                    // convert dense components requested into one-based indexing.
                     if (c < 0 || c > this.n)
                         throw new Error('bad dense component: ' + c);
                     icom.push(c + 1);
@@ -9777,8 +9754,6 @@ var Solver = (function () {
                 }
             }
             else {
-                // if user asked for dense output but did not specify any denseComponents,
-                // request all of them.
                 for (var i = 1; i <= this.n; ++i) {
                     icom.push(i);
                 }
@@ -9790,8 +9765,6 @@ var Solver = (function () {
         var hMax = Math.abs(this.maxStepSize || xEnd - x);
         var lfSafe = 2 * km * km + km;
         function expandToArray(x, n) {
-            // If x is an array, return a 1-based copy of it. If x is a number, return a new 1-based array
-            // consisting of n copies of the number.
             var tolArray = [0];
             if (Array.isArray(x)) {
                 return tolArray.concat(x);
@@ -9808,13 +9781,10 @@ var Solver = (function () {
         var nStep = 0;
         var nAccept = 0;
         var nReject = 0;
-        // call to core integrator
         var nrd = Math.max(1, nrdens);
         var ncom = Math.max(1, (2 * km + 5) * nrdens);
         var dens = Solver.dim(ncom);
         var fSafe = Solver.dim2(lfSafe, nrd);
-        // now return: nfcn, nstep, naccept, nreject XXX
-        // Wrap f in a function F which hides the one-based indexing from the customers.
         var F = function (x, y, yp) {
             var yp1 = yp.slice(1);
             var ret = f(x, y.slice(1), yp1);
@@ -9824,28 +9794,23 @@ var Solver = (function () {
                 yp.splice.apply(yp, [1, _this.n].concat(yp1));
         };
         var odxcor = function () {
-            var xOldd; // shared with contex
-            var hhh; // shared with contex
-            var kmit; // shared with contex
+            var xOldd;
+            var hhh;
+            var kmit;
             var acceptStep = function (n) {
-                // Returns true if we should continue the integration. The only time false
-                // is returned is when the user's solution observation function has returned false,
-                // indicating that she does not wish to continue the computation.
                 xOld = x;
                 x += h;
                 if (_this.denseOutput) {
-                    // kmit = mu of the paper
                     kmit = 2 * kc - _this.interpolationFormulaDegree + 1;
                     for (var i = 1; i <= nrd; ++i)
                         dens[i] = y[icom[i]];
                     xOldd = xOld;
-                    hhh = h; // note: xOldd and hhh are part of /CONODX/
+                    hhh = h;
                     for (var i = 1; i <= nrd; ++i)
                         dens[nrd + i] = h * dz[icom[i]];
                     var kln = 2 * nrd;
                     for (var i = 1; i <= nrd; ++i)
                         dens[kln + i] = t[1][icom[i]];
-                    // compute solution at mid-point
                     for (var j = 2; j <= kc; ++j) {
                         var dblenj = nj[j];
                         for (var l = j; l >= 2; --l) {
@@ -9858,16 +9823,13 @@ var Solver = (function () {
                     var krn = 4 * nrd;
                     for (var i = 1; i <= nrd; ++i)
                         dens[krn + i] = ySafe[1][i];
-                    // compute first derivative at right end
                     for (var i = 1; i <= n; ++i)
                         yh1[i] = t[1][i];
                     F(x, yh1, yh2);
                     krn = 3 * nrd;
                     for (var i = 1; i <= nrd; ++i)
                         dens[krn + i] = yh2[icom[i]] * h;
-                    // THE LOOP
                     for (var kmi = 1; kmi <= kmit; ++kmi) {
-                        // compute kmi-th derivative at mid-point
                         var kbeg = (kmi + 1) / 2 | 0;
                         for (var kk = kbeg; kk <= kc; ++kk) {
                             var facnj = Math.pow(nj[kk] / 2, kmi - 1);
@@ -9890,7 +9852,6 @@ var Solver = (function () {
                             dens[krn + i] = ySafe[kbeg][i] * h;
                         if (kmi === kmit)
                             continue;
-                        // compute differences
                         for (var kk = (kmi + 2) / 2 | 0; kk <= kc; ++kk) {
                             var lbeg = iPoint[kk + 1];
                             var lend = iPoint[kk] + kmi + 1;
@@ -9908,7 +9869,6 @@ var Solver = (function () {
                                     fSafe[l][i] -= dz[icom[i]];
                             }
                         }
-                        // compute differences
                         for (var kk = (kmi + 2) / 2 | 0; kk <= kc; ++kk) {
                             var lbeg = iPoint[kk + 1] - 1;
                             var lend = iPoint[kk] + kmi + 2;
@@ -9920,7 +9880,6 @@ var Solver = (function () {
                         }
                     }
                     interp(nrd, dens, kmit);
-                    // estimation of interpolation error
                     if (_this.denseOutputErrorEstimator && kmit >= 1) {
                         var errint = 0;
                         for (var i = 1; i <= nrd; ++i)
@@ -9942,11 +9901,9 @@ var Solver = (function () {
                     y[i] = t[1][i];
                 ++nAccept;
                 if (solOut) {
-                    // If denseOutput, we also want to supply the dense closure.
                     if (solOut(nAccept + 1, xOld, x, y.slice(1), _this.denseOutput && contex(xOldd, hhh, kmit, dens, icom)) === false)
                         return false;
                 }
-                // compute optimal order
                 var kopt;
                 if (kc === 2) {
                     kopt = Math.min(3, km - 1);
@@ -9969,12 +9926,11 @@ var Solver = (function () {
                             kopt = Math.min(kc, km - 1);
                     }
                 }
-                // after a rejected step
                 if (reject) {
                     k = Math.min(kopt, kc);
                     h = posneg * Math.min(Math.abs(h), Math.abs(hh[k]));
                     reject = false;
-                    return true; // goto 10
+                    return true;
                 }
                 if (kopt <= kc) {
                     h = hh[kopt];
@@ -9987,22 +9943,17 @@ var Solver = (function () {
                         h = hh[kc] * a[kopt] / a[kc];
                     }
                 }
-                // compute stepsize for next step
                 k = kopt;
                 h = posneg * Math.abs(h);
                 return true;
             };
             var midex = function (j) {
                 var dy = Solver.dim(_this.n);
-                // Computes the jth line of the extrapolation table and
-                // provides an estimation of the optional stepsize
                 var hj = h / nj[j];
-                // Euler starting step
                 for (var i = 1; i <= _this.n; ++i) {
                     yh1[i] = y[i];
                     yh2[i] = y[i] + hj * dz[i];
                 }
-                // Explicit midpoint rule
                 var m = nj[j] - 1;
                 var njMid = (nj[j] / 2) | 0;
                 for (var mm = 1; mm <= m; ++mm) {
@@ -10024,7 +9975,6 @@ var Solver = (function () {
                         yh2[i] = ys + 2 * hj * dy[i];
                     }
                     if (mm <= _this.stabilityCheckCount && j <= _this.stabilityCheckTableLines) {
-                        // stability check
                         var del1 = 0;
                         for (var i = 1; i <= _this.n; ++i) {
                             del1 += Math.pow(dz[i] / scal[i], 2);
@@ -10043,7 +9993,6 @@ var Solver = (function () {
                         }
                     }
                 }
-                // final smoothing step
                 F(x + h, yh2, dy);
                 if (_this.denseOutput && njMid <= 2 * j - 1) {
                     ++iPt;
@@ -10055,9 +10004,8 @@ var Solver = (function () {
                     t[j][i] = (yh1[i] + yh2[i] + hj * dy[i]) / 2;
                 }
                 nEval += nj[j];
-                // polynomial extrapolation
                 if (j === 1)
-                    return; // was j.eq.1
+                    return;
                 var dblenj = nj[j];
                 var fac;
                 for (var l = j; l > 1; --l) {
@@ -10067,7 +10015,6 @@ var Solver = (function () {
                     }
                 }
                 err = 0;
-                // scaling
                 for (var i = 1; i <= _this.n; ++i) {
                     var t1i = Math.max(Math.abs(y[i]), Math.abs(t[1][i]));
                     scal[i] = aTol[i] + rTol[i] * t1i;
@@ -10081,7 +10028,6 @@ var Solver = (function () {
                     return;
                 }
                 errOld = Math.max(4 * err, 1);
-                // compute optimal stepsizes
                 var exp0 = 1 / (2 * j - 1);
                 var facMin = Math.pow(_this.stepSizeFac1, exp0);
                 fac = Math.min(_this.stepSizeFac2 / facMin, Math.max(facMin, Math.pow(err / _this.stepSafetyFactor1, exp0) / _this.stepSafetyFactor2));
@@ -10090,9 +10036,7 @@ var Solver = (function () {
                 w[j] = a[j] / hh[j];
             };
             var interp = function (n, y, imit) {
-                // computes the coefficients of the interpolation formula
-                var a = new Array(31); // zero-based: 0:30
-                // begin with Hermite interpolation
+                var a = new Array(31);
                 for (var i = 1; i <= n; ++i) {
                     var y0_1 = y[i];
                     var y1 = y[2 * n + i];
@@ -10106,12 +10050,10 @@ var Solver = (function () {
                     y[3 * n + i] = bspl;
                     if (imit < 0)
                         continue;
-                    // compute the derivatives of Hermite at midpoint
                     var ph0 = (y0_1 + y1) * 0.5 + 0.125 * (aspl + bspl);
                     var ph1 = yDiff + (aspl - bspl) * 0.25;
                     var ph2 = -(yp0 - yp1);
                     var ph3 = 6 * (bspl - aspl);
-                    // compute the further coefficients
                     if (imit >= 1) {
                         a[1] = 16 * (y[5 * n + i] - ph1);
                         if (imit >= 3) {
@@ -10144,7 +10086,6 @@ var Solver = (function () {
                 return function (c, x) {
                     var i = 0;
                     for (var j = 1; j <= nrd; ++j) {
-                        // careful: customers describe components 0-based. We record indices 1-based.
                         if (icom[j] === c + 1)
                             i = j;
                     }
@@ -10163,24 +10104,19 @@ var Solver = (function () {
                     return phthet + Math.pow(theta * theta1, 2) * ret;
                 };
             };
-            // preparation
             var ySafe = Solver.dim2(km, nrd);
             var hh = Solver.dim(km);
             var t = Solver.dim2(km, _this.n);
-            // Define the step size sequence
             var nj = Solver.stepSizeSequence(nSeq, km);
-            // Define the a[i] for order selection
             var a = Solver.dim(km);
             a[1] = 1 + nj[1];
             for (var i = 2; i <= km; ++i) {
                 a[i] = a[i - 1] + nj[i];
             }
-            // Initial Scaling
             var scal = Solver.dim(_this.n);
             for (var i = 1; i <= _this.n; ++i) {
                 scal[i] = aTol[i] + rTol[i] + Math.abs(y[i]);
             }
-            // Initial preparations
             var posneg = xEnd - x >= 0 ? 1 : -1;
             var k = Math.max(2, Math.min(km - 1, Math.floor(-Solver.log10(rTol[1] + 1e-40) * 0.6 + 1.5)));
             var h = Math.max(Math.abs(_this.initialStepSize), 1e-4);
@@ -10207,7 +10143,6 @@ var Solver = (function () {
                     }
                     iPt = 0;
                 }
-                // check return value and abandon integration if called for
                 if (false === solOut(nAccept + 1, xOld, x, y.slice(1))) {
                     return Outcome.EarlyReturn;
                 }
@@ -10236,7 +10171,6 @@ var Solver = (function () {
                 switch (state) {
                     case STATE.Start:
                         atov = false;
-                        // Is xEnd reached in the next step?
                         if (0.1 * Math.abs(xEnd - x) <= Math.abs(x) * _this.uRound)
                             break loop;
                         h = posneg * Math.min(Math.abs(h), Math.abs(xEnd - x), hMax, Math.abs(hoptde));
@@ -10248,7 +10182,6 @@ var Solver = (function () {
                             F(x, y, dz);
                             ++nEval;
                         }
-                        // The first and last step
                         if (nStep === 0 || last) {
                             iPt = 0;
                             ++nStep;
@@ -10268,7 +10201,6 @@ var Solver = (function () {
                         state = STATE.BasicIntegrationStep;
                         continue;
                     case STATE.BasicIntegrationStep:
-                        // basic integration step
                         iPt = 0;
                         ++nStep;
                         if (nStep >= _this.maxSteps) {
@@ -10282,7 +10214,6 @@ var Solver = (function () {
                                 continue loop;
                             }
                         }
-                        // convergence monitor
                         if (k === 2 || reject) {
                             state = STATE.ConvergenceStep;
                         }
@@ -10311,7 +10242,6 @@ var Solver = (function () {
                         state = STATE.HopeForConvergence;
                         continue;
                     case STATE.HopeForConvergence:
-                        // hope for convergence in line k + 1
                         if (err > Math.pow(nj[k + 1] / 2, 2)) {
                             state = STATE.Reject;
                             continue;
@@ -10353,7 +10283,6 @@ var Solver = (function () {
             nEval: nEval
         };
     };
-    // return a 1-based array of length n. Initial values undefined.
     Solver.dim = function (n) { return Array(n + 1); };
     Solver.log10 = function (x) { return Math.log(x) / Math.LN10; };
     return Solver;
@@ -10362,22 +10291,34 @@ exports.Solver = Solver;
 
 },{}],4:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var odex_1 = require('./node_modules/odex/src/odex');
 var graph_1 = require('./graph');
-var Airy = (function () {
-    function Airy(elt1, elt2) {
+var DifferentialEquationView = (function () {
+    function DifferentialEquationView(dim, elements, width, height) {
         var _this = this;
+        this.g = [];
+        this.tweak = function (e) { return console.log('tweak unimplemented'); };
+        elements.map(function (e) {
+            _this.solver = new odex_1.Solver(dim);
+            _this.solver.denseOutput = true;
+            _this.g.push(new graph_1.Graph('#' + e, width, height));
+            document.querySelector('#' + e + ' svg').onmousemove = function (e) { return _this.tweak(e); };
+        });
+    }
+    return DifferentialEquationView;
+}());
+var Airy = (function (_super) {
+    __extends(Airy, _super);
+    function Airy(elt0, elt1) {
+        var _this = this;
+        _super.call(this, 2, [elt0, elt1], 500, 350);
         this.initialData = [0.2782174909, 0.2723742043];
-        this.draw = function () {
-            var apts = [];
-            var bpts = [];
-            _this.solver.solve(function (x, y) { return [y[1], x * y[0]]; }, -15, _this.id, 5, _this.solver.grid(0.05, function (x, y) {
-                apts.push([x, y[0]]);
-                bpts.push([y[0], y[1]]);
-            }));
-            _this.g1.draw(apts, 'Ai');
-            _this.g2.draw(bpts);
-        };
+        this.eq = function (x, y) { return [y[1], x * y[0]]; };
         this.tweak = function (e) {
             var x = e.offsetX - 500;
             var p = x / 2000;
@@ -10388,22 +10329,29 @@ var Airy = (function () {
             _this.draw();
         };
         this.id = this.initialData.slice();
-        this.solver = new odex_1.Solver(2);
-        this.solver.denseOutput = true;
-        this.g1 = new graph_1.Graph('#' + elt1, 500, 350);
-        this.g2 = new graph_1.Graph('#' + elt2, 500, 350);
-        document.getElementById(elt1).onmousemove = this.tweak;
-        document.getElementById(elt2).onmousemove = this.tweak;
-        this.g1.axes([-15, 5], [-0.5, 0.75]);
-        this.g2.axes([-0.5, 0.5], [-1.5, 1.5]);
+        this.g[0].axes([-15, 5], [-0.5, 0.75]);
+        this.g[1].axes([-0.5, 0.5], [-1.5, 1.5]);
     }
+    Airy.prototype.draw = function () {
+        var apts = [];
+        var bpts = [];
+        this.solver.solve(this.eq, -15, this.id, 5, this.solver.grid(0.05, function (x, y) {
+            apts.push([x, y[0]]);
+            bpts.push([y[0], y[1]]);
+        }));
+        this.g[0].draw(apts, 'Ai');
+        this.g[1].draw(bpts);
+    };
     return Airy;
-}());
+}(DifferentialEquationView));
 exports.Airy = Airy;
-var Lorenz = (function () {
+var Lorenz = (function (_super) {
+    __extends(Lorenz, _super);
     function Lorenz(elt) {
         var _this = this;
+        _super.call(this, 3, [elt], 500, 500);
         this.initialData = [1, 1, 1];
+        this.eq = Lorenz.L(10, 28, 8 / 3);
         this.tweak = function (e) {
             var xt = (e.offsetX - 500) / 2000;
             var yt = (e.offsetY - 500) / 2000;
@@ -10411,70 +10359,77 @@ var Lorenz = (function () {
             _this.id[1] = _this.initialData[1] + yt;
             _this.draw();
         };
-        this.draw = function () {
-            var xpts = [];
-            _this.solver.solve(Lorenz.L(10, 28, 8 / 3), 0, _this.id, 20, _this.solver.grid(0.005, function (x, y) {
-                xpts.push([y[1], y[2]]);
-            }));
-            _this.g1.draw(xpts, 'Lo');
-        };
-        this.g1 = new graph_1.Graph('#' + elt, 500, 500);
-        this.solver = new odex_1.Solver(3);
-        this.solver.denseOutput = true;
         this.id = this.initialData.slice();
-        document.getElementById(elt).onmousemove = this.tweak;
-        this.g1.axes([-30, 30], [0, 50]);
+        this.g[0].axes([-30, 30], [0, 50]);
         this.id = this.initialData.slice();
     }
+    Lorenz.prototype.draw = function () {
+        var xpts = [];
+        this.solver.solve(this.eq, 0, this.id, 20, this.solver.grid(0.005, function (x, y) {
+            xpts.push([y[1], y[2]]);
+        }));
+        this.g[0].draw(xpts, 'Lo');
+    };
     Lorenz.L = function (sigma, rho, beta) { return function (x, y) { return [
         sigma * (y[1] - y[0]),
         y[0] * (rho - y[2]) - y[1],
         y[0] * y[1] - beta * y[2]
     ]; }; };
     return Lorenz;
-}());
+}(DifferentialEquationView));
 exports.Lorenz = Lorenz;
-var PredatorPrey = (function () {
-    function PredatorPrey(elt1, elt2) {
+var PredatorPrey = (function (_super) {
+    __extends(PredatorPrey, _super);
+    function PredatorPrey(elt0, elt1) {
         var _this = this;
-        this.sz = 400;
+        _super.call(this, 2, [elt0, elt1], PredatorPrey.sz, PredatorPrey.sz);
         this.initialData = [1, 1];
-        this.solver = new odex_1.Solver(2);
+        this.eq = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1);
         this.tweak = function (e) {
             var x = e.offsetX;
             var y = e.offsetY;
-            _this.initialData[0] = 3 * x / _this.sz;
-            _this.initialData[1] = 2 - 2 * y / _this.sz;
+            _this.initialData[0] = 3 * x / PredatorPrey.sz;
+            _this.initialData[1] = 2 - 2 * y / PredatorPrey.sz;
             _this.draw();
         };
-        this.draw = function () {
-            var xpts = [];
-            var ypts = [];
-            var tpts = [];
-            _this.solver.solve(PredatorPrey.LV(2 / 3, 4 / 3, 1, 1), 0, _this.initialData, 25, _this.solver.grid(0.01, function (x, y) {
-                xpts.push([x, y[0]]);
-                ypts.push([x, y[1]]);
-                tpts.push([y[0], y[1]]);
-            }));
-            _this.g.draw(xpts, 'Pred');
-            _this.g.draw(ypts, 'Prey');
-            _this.phase.draw(tpts, 'Phase');
-        };
-        this.solver.denseOutput = true;
-        this.g = new graph_1.Graph('#' + elt1, this.sz, this.sz);
-        this.phase = new graph_1.Graph('#' + elt2, this.sz, this.sz);
-        this.g.axes([0, 25], [0, 4]);
-        this.phase.axes([0, 3], [0, 2]);
-        document.querySelector('#' + elt1 + ' svg').onmousemove = this.tweak;
-        document.querySelector('#' + elt2 + ' svg').onmousemove = this.tweak;
+        this.g[0].axes([0, 25], [0, 4]);
+        this.g[1].axes([0, 3], [0, 2]);
     }
+    PredatorPrey.prototype.draw = function () {
+        var xpts = [];
+        var ypts = [];
+        var tpts = [];
+        this.solver.solve(this.eq, 0, this.initialData, 25, this.solver.grid(0.01, function (x, y) {
+            xpts.push([x, y[0]]);
+            ypts.push([x, y[1]]);
+            tpts.push([y[0], y[1]]);
+        }));
+        this.g[0].draw(xpts, 'Pred');
+        this.g[0].draw(ypts, 'Prey');
+        this.g[1].draw(tpts, 'Phase');
+    };
+    PredatorPrey.sz = 400;
     PredatorPrey.LV = function (a, b, c, d) { return function (x, y) { return [
         a * y[0] - b * y[0] * y[1],
         c * y[0] * y[1] - d * y[1]
     ]; }; };
     return PredatorPrey;
-}());
+}(DifferentialEquationView));
 exports.PredatorPrey = PredatorPrey;
+var VanDerPol = (function (_super) {
+    __extends(VanDerPol, _super);
+    function VanDerPol(elt1, elt2) {
+        _super.call(this, 2, [elt1, elt2], 400, 400);
+        this.initialData = [1, 1];
+        this.eq = VanDerPol.V(1);
+    }
+    VanDerPol.V = function (e) { return function (x, y) { return [
+        y[1],
+        ((1 - Math.pow(y[0], 2)) * y[1] - y[0]) / e
+    ]; }; };
+    return VanDerPol;
+}(DifferentialEquationView));
+exports.VanDerPol = VanDerPol;
 
 },{"./graph":1,"./node_modules/odex/src/odex":3}]},{},[4])(4)
 });
