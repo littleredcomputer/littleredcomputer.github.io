@@ -17,7 +17,7 @@ function make_bundle (src, name) {
       .pipe(rename({extname: '.bundle.js'}))
       .pipe(buffer())
       .pipe(sourcemaps.init({loadMaps: true}))
-      .pipe(sourcemaps.write('.', {sourceRoot: '..'}))
+      .pipe(sourcemaps.write('.', {sourceRoot: '/public'}))
       .pipe(gulp.dest('../public'))
 }
 
