@@ -18,6 +18,19 @@ var DifferentialEquationView = (function () {
             document.querySelector('#' + e + ' svg').onmousemove = function (e) { return _this.tweak(e); };
         });
     }
+    DifferentialEquationView.prototype.phaseDraw = function (initialData, start, end) {
+        var xpts = [];
+        var ypts = [];
+        var tpts = [];
+        this.solver.solve(this.eq, start, initialData, end, this.solver.grid(0.1, function (x, y) {
+            xpts.push([x, y[0]]);
+            ypts.push([x, y[1]]);
+            tpts.push([y[0], y[1]]);
+        }));
+        this.g[0].draw(xpts, 'Pred');
+        this.g[0].draw(ypts, 'Prey');
+        this.g[1].draw(tpts);
+    };
     return DifferentialEquationView;
 }());
 var Airy = (function (_super) {
@@ -26,7 +39,6 @@ var Airy = (function (_super) {
         var _this = this;
         _super.call(this, 2, [elt0, elt1], 500, 350);
         this.initialData = [0.2782174909, 0.2723742043];
-        this.eq = function (x, y) { return [y[1], x * y[0]]; };
         this.tweak = function (e) {
             var x = e.offsetX - 500;
             var p = x / 2000;
@@ -34,6 +46,7 @@ var Airy = (function (_super) {
             var q = y / 2000;
             _this.draw([_this.initialData[0] + p, _this.initialData[1] + q]);
         };
+        this.eq = function (x, y) { return [y[1], x * y[0]]; };
         this.g[0].axes([-15, 5], [-0.5, 0.75]);
         this.g[1].axes([-0.5, 0.5], [-1.5, 1.5]);
     }
@@ -57,12 +70,12 @@ var Lorenz = (function (_super) {
         var _this = this;
         _super.call(this, 3, [elt], 500, 500);
         this.initialData = [1, 1, 1];
-        this.eq = Lorenz.L(10, 28, 8 / 3);
         this.tweak = function (e) {
             var xt = (e.offsetX - 500) / 2000;
             var yt = (e.offsetY - 500) / 2000;
             _this.draw([_this.initialData[0] + xt, _this.initialData[1] + yt]);
         };
+        this.eq = Lorenz.L(10, 28, 8 / 3);
         this.g[0].axes([-30, 30], [0, 50]);
     }
     Lorenz.prototype.draw = function (initialData) {
@@ -87,12 +100,12 @@ var PredatorPrey = (function (_super) {
         var _this = this;
         _super.call(this, 2, [elt0, elt1], PredatorPrey.sz, PredatorPrey.sz);
         this.initialData = [1, 1];
-        this.eq = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1);
         this.tweak = function (e) {
             var x = e.offsetX;
             var y = e.offsetY;
             _this.draw([3 * x / PredatorPrey.sz, 2 - 2 * y / PredatorPrey.sz]);
         };
+        this.eq = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1);
         this.g[0].axes([0, 25], [0, 4]);
         this.g[1].axes([0, 3], [0, 2]);
     }
@@ -125,12 +138,12 @@ var VanDerPol = (function (_super) {
         _super.call(this, 2, [elt1, elt2], VanDerPol.sz, VanDerPol.sz);
         this.initialData = [1, 1];
         this.end = 25;
-        this.eq = VanDerPol.V(3);
         this.tweak = function (e) {
             var x = e.offsetX;
             var y = e.offsetY;
             _this.draw([_this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
         };
+        this.eq = VanDerPol.V(3);
         this.g[0].axes([0, this.end], [-3, 3]);
         this.g[1].axes([-3, 3], [-3, 3]);
     }
@@ -156,3 +169,31 @@ var VanDerPol = (function (_super) {
     return VanDerPol;
 }(DifferentialEquationView));
 exports.VanDerPol = VanDerPol;
+var DrivenPendulum = (function (_super) {
+    __extends(DrivenPendulum, _super);
+    function DrivenPendulum(elt1, elt2) {
+        var _this = this;
+        _super.call(this, 3, [elt1, elt2], DrivenPendulum.sz, DrivenPendulum.sz);
+        this.initialData = [1, 0];
+        this.tweak = function (e) {
+            var x = e.offsetX;
+            var y = e.offsetY;
+            _this.draw([_this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
+        };
+        this.eq = DrivenPendulum.F(1, 0.1, 6.26, 0, 9.8);
+        this.g[0].axes([0, 10], [-Math.PI, Math.PI]);
+        this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI]);
+    }
+    DrivenPendulum.prototype.draw = function (initialData) {
+        if (initialData === void 0) { initialData = this.initialData; }
+        this.phaseDraw(initialData, 0, 10);
+    };
+    DrivenPendulum.sz = 400;
+    DrivenPendulum.F = function (l, a, omega, phi, g) { return function (x, _a) {
+        var t = _a[0], theta = _a[1], thetadot = _a[2];
+        var _1 = Math.sin(theta);
+        return [1, thetadot, (_1 * Math.cos(omega * t + phi) * a * Math.pow(omega, 2) - _1 * g) / l];
+    }; };
+    return DrivenPendulum;
+}(DifferentialEquationView));
+exports.DrivenPendulum = DrivenPendulum;

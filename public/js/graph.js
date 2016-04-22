@@ -1,3 +1,4 @@
+/// <reference path="typings/main/definitions/d3/index.d.ts" />
 "use strict";
 var d3 = require('d3');
 var Graph = (function () {

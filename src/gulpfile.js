@@ -4,8 +4,6 @@ var ts = require('gulp-typescript')
 var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
 var buffer = require('vinyl-buffer')
-// var gutil = require('gulp-util')
-// var uglify = require('gulp-uglify')
 var sourcemaps = require('gulp-sourcemaps')
 
 function make_bundle (src, name) {
@@ -30,7 +28,7 @@ function make_bundle (src, name) {
 //   .pipe(gulp.dest('../public'))
 // })
 
-gulp.task('js', function () {
+gulp.task('bundle', function () {
   // bundle with dependencies
   make_bundle('./js/odex-demo.js', 'odexdemo')
   // copy sources, so sourcemaps will work
@@ -43,7 +41,9 @@ gulp.task('ts', function () {
   .pipe(ts({
     noImplicitAny: false
   }))
-  .pipe(gulp.dest('./foo'))
+  .pipe(gulp.dest('js'))
 })
 
-gulp.task('default', ['js'])
+gulp.task('default', ['bundle'])
+
+gulp.task('ts-bundle', ['ts', 'bundle'])

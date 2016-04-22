@@ -4,6 +4,7 @@ import {Graph} from './graph'
 class DifferentialEquationView {
   g: Graph[] = []
   solver: Solver
+  eq: Derivative
 
   constructor(dim: number, elements: string[], width: number, height: number) {
     elements.map(e => {
@@ -14,15 +15,29 @@ class DifferentialEquationView {
     })
   }
 
+  phaseDraw(initialData: number[], start: number, end: number) {
+    let xpts: [number, number][] = []
+    let ypts: [number, number][] = []
+    let tpts: [number, number][] = []
+    this.solver.solve(this.eq, start, initialData, end, this.solver.grid(0.1, (x, y) => {
+      xpts.push([x, y[0]])
+      ypts.push([x, y[1]])
+      tpts.push([y[0], y[1]])
+    }))
+    this.g[0].draw(xpts, 'Pred')
+    this.g[0].draw(ypts, 'Prey')
+    this.g[1].draw(tpts)
+  }
+
   tweak = (e: MouseEvent) => console.log('tweak unimplemented')
 }
 
 export class Airy extends DifferentialEquationView {
   initialData: number[] = [0.2782174909, 0.2723742043]
-  eq: Derivative = (x, y) => [y[1], x * y[0]]
 
   constructor(elt0: string, elt1: string) {
     super(2, [elt0, elt1], 500, 350)
+    this.eq = (x, y) => [y[1], x * y[0]]
     this.g[0].axes([-15, 5], [-0.5, 0.75])
     this.g[1].axes([-0.5, 0.5], [-1.5, 1.5])
   }
@@ -56,10 +71,9 @@ export class Lorenz extends DifferentialEquationView {
     y[0] * y[1] - beta * y[2]
   ]
 
-  eq: Derivative = Lorenz.L(10, 28, 8 / 3)
-
   constructor(elt: string) {
     super(3, [elt], 500, 500)
+    this.eq = Lorenz.L(10, 28, 8 / 3)
     this.g[0].axes([-30, 30], [0, 50])
   }
 
@@ -87,10 +101,9 @@ export class PredatorPrey extends DifferentialEquationView {
     c * y[0] * y[1] - d * y[1]
   ]
 
-  eq: Derivative = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1)
-
   constructor(elt0: string, elt1: string) {
     super(2, [elt0, elt1], PredatorPrey.sz, PredatorPrey.sz)
+    this.eq = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1)
     this.g[0].axes([0, 25],  [0, 4])
     this.g[1].axes([0, 3], [0, 2])
   }
@@ -125,10 +138,10 @@ export class VanDerPol extends DifferentialEquationView {
     y[1],
     ((1 - Math.pow(y[0], 2)) * y[1] - y[0]) / e
   ]
-  eq = VanDerPol.V(3)
 
   constructor(elt1: string, elt2: string) {
     super(2, [elt1, elt2], VanDerPol.sz, VanDerPol.sz)
+    this.eq = VanDerPol.V(3)
     this.g[0].axes([0, this.end], [-3, 3])
     this.g[1].axes([-3, 3], [-3, 3])
   }
@@ -151,5 +164,28 @@ export class VanDerPol extends DifferentialEquationView {
     this.g[0].draw(xpts, 'Pred')
     this.g[0].draw(ypts, 'Prey')
     this.g[1].draw(tpts)
+  }
+}
+
+export class DrivenPendulum extends DifferentialEquationView {
+  static sz = 400
+  initialData = [1, 0]
+  static F: ((l: number, a: number, omega: number, phi: number, g: number) => Derivative) = (l, a, omega, phi, g) => (x: number, [t, theta, thetadot]) => {
+    let _1 = Math.sin(theta)
+    return [1, thetadot, (_1 * Math.cos(omega * t + phi) * a * Math.pow(omega, 2) - _1 * g) / l]
+  }
+  constructor(elt1: string, elt2: string) {
+    super(3, [elt1, elt2], DrivenPendulum.sz, DrivenPendulum.sz)
+    this.eq = DrivenPendulum.F(1, 0.1, 6.26, 0, 9.8)
+    this.g[0].axes([0, 10], [-Math.PI, Math.PI])
+    this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
+  }
+  draw(initialData: number[] = this.initialData) {
+    this.phaseDraw(initialData, 0, 10)
+  }
+  tweak = (e: MouseEvent) => {
+    let x = e.offsetX
+    let y = e.offsetY
+    this.draw([this.g[1].x.invert(x), this.g[1].y.invert(y)])
   }
 }
