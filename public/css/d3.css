@@ -42,6 +42,12 @@ g.axis {
   opacity: .6;
   stroke-width: 2px;
 }
+circle.graph-point.Pred {
+  fill: salmon;
+}
+circle.graph-point.Prey {
+  fill: slateblue;
+}
 
 .line.Phase {
   stroke: purple;
