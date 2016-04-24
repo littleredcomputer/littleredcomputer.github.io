@@ -7,9 +7,14 @@ var __extends = (this && this.__extends) || function (d, b) {
 var odex_1 = require('./node_modules/odex/src/odex');
 var graph_1 = require('./graph');
 var DifferentialEquationView = (function () {
+    // WHERE I LEFT OFF
+    // now need something like getEq, which is applied to the result
+    // of getParameters, to yield the equation to integrate
     function DifferentialEquationView(dim, elements, width, height) {
         var _this = this;
         this.g = [];
+        this.dt = 0.1;
+        this.getParameters = function () { return []; };
         this.tweak = function (e) { return console.log('tweak unimplemented'); };
         elements.map(function (e) {
             _this.solver = new odex_1.Solver(dim);
@@ -18,14 +23,15 @@ var DifferentialEquationView = (function () {
             document.querySelector('#' + e + ' svg').onmousemove = function (e) { return _this.tweak(e); };
         });
     }
-    DifferentialEquationView.prototype.phaseDraw = function (initialData, start, end) {
+    DifferentialEquationView.prototype.phaseDraw = function (initialData, start, end, transform) {
         var xpts = [];
         var ypts = [];
         var tpts = [];
-        this.solver.solve(this.eq, start, initialData, end, this.solver.grid(0.1, function (x, y) {
-            xpts.push([x, y[0]]);
-            ypts.push([x, y[1]]);
-            tpts.push([y[0], y[1]]);
+        this.solver.solve(this.eq, start, initialData, end, this.solver.grid(this.dt, function (x, y) {
+            var ys = transform ? transform(y) : y;
+            xpts.push([x, ys[0]]);
+            ypts.push([x, ys[1]]);
+            tpts.push([ys[0], ys[1]]);
         }));
         this.g[0].draw(xpts, 'Pred');
         this.g[0].draw(ypts, 'Prey');
@@ -173,22 +179,28 @@ var DrivenPendulum = (function (_super) {
     __extends(DrivenPendulum, _super);
     function DrivenPendulum(elt1, elt2) {
         var _this = this;
-        _super.call(this, 3, [elt1, elt2], DrivenPendulum.sz, DrivenPendulum.sz);
-        this.initialData = [1, 0];
+        _super.call(this, 3, [elt1, elt2], 2 * DrivenPendulum.sz, DrivenPendulum.sz);
+        this.end = 30;
+        this.dt = 0.04;
+        this.initialData = [0, 1, 0];
         this.tweak = function (e) {
             var x = e.offsetX;
             var y = e.offsetY;
-            _this.draw([_this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
+            _this.draw([0, _this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
         };
-        this.eq = DrivenPendulum.F(1, 0.1, 6.26, 0, 9.8);
-        this.g[0].axes([0, 10], [-Math.PI, Math.PI]);
-        this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI]);
+        this.eq = DrivenPendulum.F(1, 0.1, 30 * Math.sqrt(9.8), 0, 9.8);
+        this.g[0].axes([0, this.end], [-Math.PI, Math.PI]);
+        this.g[0].wrap_pi = true;
+        this.g[0].points = true;
+        //this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
+        this.g[1].axes([-10, 10], [-10, 10]);
     }
     DrivenPendulum.prototype.draw = function (initialData) {
         if (initialData === void 0) { initialData = this.initialData; }
-        this.phaseDraw(initialData, 0, 10);
+        this.phaseDraw(initialData, 0, this.end, function (a) { return a.slice(1); });
     };
     DrivenPendulum.sz = 400;
+    DrivenPendulum.a = function (omega, phi) { return function (t) { return Math.cos(2 * Math.PI * omega * t + phi); }; };
     DrivenPendulum.F = function (l, a, omega, phi, g) { return function (x, _a) {
         var t = _a[0], theta = _a[1], thetadot = _a[2];
         var _1 = Math.sin(theta);

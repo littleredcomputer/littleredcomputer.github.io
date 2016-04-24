@@ -5,7 +5,12 @@ class DifferentialEquationView {
   g: Graph[] = []
   solver: Solver
   eq: Derivative
-
+  dt = 0.1
+  getParameters: () => number[] = () => []
+  // WHERE I LEFT OFF
+  // now need something like getEq, which is applied to the result
+  // of getParameters, to yield the equation to integrate
+  
   constructor(dim: number, elements: string[], width: number, height: number) {
     elements.map(e => {
       this.solver = new Solver(dim)
@@ -15,14 +20,15 @@ class DifferentialEquationView {
     })
   }
 
-  phaseDraw(initialData: number[], start: number, end: number) {
+  phaseDraw(initialData: number[], start: number, end: number, transform?: (xs: number[]) => number[]) {
     let xpts: [number, number][] = []
     let ypts: [number, number][] = []
     let tpts: [number, number][] = []
-    this.solver.solve(this.eq, start, initialData, end, this.solver.grid(0.1, (x, y) => {
-      xpts.push([x, y[0]])
-      ypts.push([x, y[1]])
-      tpts.push([y[0], y[1]])
+    this.solver.solve(this.eq, start, initialData, end, this.solver.grid(this.dt, (x, y) => {
+      let ys = transform ? transform(y) : y
+      xpts.push([x, ys[0]])
+      ypts.push([x, ys[1]])
+      tpts.push([ys[0], ys[1]])
     }))
     this.g[0].draw(xpts, 'Pred')
     this.g[0].draw(ypts, 'Prey')
@@ -169,23 +175,31 @@ export class VanDerPol extends DifferentialEquationView {
 
 export class DrivenPendulum extends DifferentialEquationView {
   static sz = 400
-  initialData = [1, 0]
-  static F: ((l: number, a: number, omega: number, phi: number, g: number) => Derivative) = (l, a, omega, phi, g) => (x: number, [t, theta, thetadot]) => {
-    let _1 = Math.sin(theta)
-    return [1, thetadot, (_1 * Math.cos(omega * t + phi) * a * Math.pow(omega, 2) - _1 * g) / l]
-  }
+  end = 30
+  dt = 0.04
+  initialData = [0, 1, 0]
+  static a = (omega: number, phi: number) => (t: number) => Math.cos(2 * Math.PI * omega * t + phi)
+  static F: (l: number, a: number, omega: number, phi: number, g: number) => Derivative =
+    (l, a, omega, phi, g) => (x, [t, theta, thetadot]) => {
+      let _1 = Math.sin(theta)
+      return [1, thetadot, (_1 * Math.cos(omega * t + phi) * a * Math.pow(omega, 2) - _1 * g) / l]
+    }
   constructor(elt1: string, elt2: string) {
-    super(3, [elt1, elt2], DrivenPendulum.sz, DrivenPendulum.sz)
-    this.eq = DrivenPendulum.F(1, 0.1, 6.26, 0, 9.8)
-    this.g[0].axes([0, 10], [-Math.PI, Math.PI])
-    this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
+    super(3, [elt1, elt2], 2 * DrivenPendulum.sz, DrivenPendulum.sz)
+    this.eq = DrivenPendulum.F(1, 0.1, Math.sqrt(9.8) / (2 * Math.PI), 0, 9.8)
+    this.g[0].axes([0, this.end], [-Math.PI, Math.PI])
+    this.g[0].wrap_pi = true
+    this.g[0].points = true
+    //this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
+    this.g[1].axes([-10,10],[-10,10])
+    
   }
   draw(initialData: number[] = this.initialData) {
-    this.phaseDraw(initialData, 0, 10)
+    this.phaseDraw(initialData, 0, this.end, a => a.slice(1))
   }
   tweak = (e: MouseEvent) => {
     let x = e.offsetX
     let y = e.offsetY
-    this.draw([this.g[1].x.invert(x), this.g[1].y.invert(y)])
+    this.draw([0, this.g[1].x.invert(x), this.g[1].y.invert(y)])
   }
 }

@@ -30,13 +30,13 @@ export class Graph {
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
     this.line = d3.svg.line()
       .x(d => this.x(d[0]))
-      .y(d => this.y(d[1]))
+      .y(d => this.y(this.wrap_pi ? Graph.wrap_pi(d[1]) : d[1]))
   }
 
   static wrap_pi(a0: number) {
     const PI = Math.PI
     let a = a0
-    if (-PI < a || a >= PI) {
+    if (-PI > a || a >= PI) {
       a = a - 2 * PI * Math.floor(a / 2 / PI)
       a = a < PI ? a : a - 2 * PI
     }
@@ -63,13 +63,16 @@ export class Graph {
     cls = cls || 'default'
     let xf: (a: number) => number = this.wrap_pi ? Graph.wrap_pi : x => x
     if (this.points) {
-      this.svg.selectAll('circle.graph-point')
+      this.svg.selectAll('circle.graph-point.' + cls).remove()
+      this.svg.selectAll('circle.graph-point.' + cls)
       .data(data)
       .enter()
       .append('circle')
       .attr('cx', d => this.x(d[0]))
       .attr('cy', d => this.y(xf(d[1])))
       .attr('r', 1)
+      .classed({'graph-point': true, cls: true})
+      .attr('class', 'graph-point ' + cls)
     } else {
       this.svg.selectAll('path.' + cls).remove()
       this.svg.append('path').attr('class', cls)

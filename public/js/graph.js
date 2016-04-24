@@ -20,12 +20,12 @@ var Graph = (function () {
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
         this.line = d3.svg.line()
             .x(function (d) { return _this.x(d[0]); })
-            .y(function (d) { return _this.y(d[1]); });
+            .y(function (d) { return _this.y(_this.wrap_pi ? Graph.wrap_pi(d[1]) : d[1]); });
     }
     Graph.wrap_pi = function (a0) {
         var PI = Math.PI;
         var a = a0;
-        if (-PI < a || a >= PI) {
+        if (-PI > a || a >= PI) {
             a = a - 2 * PI * Math.floor(a / 2 / PI);
             a = a < PI ? a : a - 2 * PI;
         }
@@ -50,13 +50,16 @@ var Graph = (function () {
         cls = cls || 'default';
         var xf = this.wrap_pi ? Graph.wrap_pi : function (x) { return x; };
         if (this.points) {
-            this.svg.selectAll('circle.graph-point')
+            this.svg.selectAll('circle.graph-point.' + cls).remove();
+            this.svg.selectAll('circle.graph-point.' + cls)
                 .data(data)
                 .enter()
                 .append('circle')
                 .attr('cx', function (d) { return _this.x(d[0]); })
                 .attr('cy', function (d) { return _this.y(xf(d[1])); })
-                .attr('r', 1);
+                .attr('r', 1)
+                .classed({ 'graph-point': true, cls: true })
+                .attr('class', 'graph-point ' + cls);
         }
         else {
             this.svg.selectAll('path.' + cls).remove();

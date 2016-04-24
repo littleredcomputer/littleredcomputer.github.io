@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "Pendulum I (wip)"
+date:   2016-04-23 08:53:00
+categories: math odex js
+using: katex
+---
+
+Part 4 in a series of numerically integrating differential
+equations in the browser with [odex][odex].
+
+<div id='graph'></div>
+<div id='phase'></div>
+<input id='r' type='range'/>
+<script src="/public/js/odex-demo.bundle.js"></script>
+<script>
+  new odexdemo.DrivenPendulum('graph', 'phase').draw();
+</script>
+
+[odex]: https://www.npmjs.com/package/
+[lv]: https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations
