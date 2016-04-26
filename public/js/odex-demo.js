@@ -79,7 +79,7 @@ var Lorenz = (function (_super) {
         this.tweak = function (e) {
             var xt = (e.offsetX - 500) / 2000;
             var yt = (e.offsetY - 500) / 2000;
-            _this.draw([1, _this.initialData[0] + xt, _this.initialData[1] + yt]);
+            _this.draw([_this.initialData[0] + xt, _this.initialData[1] + yt, 1]);
         };
         this.eq = Lorenz.L(10, 28, 8 / 3);
         this.g[0].axes([-30, 30], [0, 50]);

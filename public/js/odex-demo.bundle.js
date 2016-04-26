@@ -10465,7 +10465,7 @@ var DrivenPendulum = (function (_super) {
             var y = e.offsetY;
             _this.draw([0, _this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
         };
-        this.eq = DrivenPendulum.F(1, 0.1, Math.sqrt(9.8) / (2 * Math.PI), 0, 9.8);
+        this.eq = DrivenPendulum.F(1, 0.1, 2 * Math.sqrt(9.8), 0, 9.8);
         this.g[0].axes([0, this.end], [-Math.PI, Math.PI]);
         this.g[0].wrap_pi = true;
         this.g[0].points = true;
