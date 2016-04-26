@@ -10,7 +10,7 @@ class DifferentialEquationView {
   // WHERE I LEFT OFF
   // now need something like getEq, which is applied to the result
   // of getParameters, to yield the equation to integrate
-  
+
   constructor(dim: number, elements: string[], width: number, height: number) {
     elements.map(e => {
       this.solver = new Solver(dim)
@@ -32,7 +32,7 @@ class DifferentialEquationView {
     }))
     this.g[0].draw(xpts, 'Pred')
     this.g[0].draw(ypts, 'Prey')
-    this.g[1].draw(tpts)
+    this.g[1].draw(tpts, 'Phase')
   }
 
   tweak = (e: MouseEvent) => console.log('tweak unimplemented')
@@ -86,7 +86,7 @@ export class Lorenz extends DifferentialEquationView {
   tweak = (e: MouseEvent) => {
     let xt = (e.offsetX - 500) / 2000
     let yt = (e.offsetY - 500) / 2000
-    this.draw([this.initialData[0] + xt, this.initialData[1] + yt])
+    this.draw([this.initialData[0] + xt, this.initialData[1] + yt, 1])
   }
 
   draw(initialData: number[] = this.initialData) {
@@ -100,6 +100,7 @@ export class Lorenz extends DifferentialEquationView {
 
 export class PredatorPrey extends DifferentialEquationView {
   static sz = 400
+  end = 25
   initialData = [1, 1]
 
   static LV = (a: number, b: number, c: number, d: number) => (x: number, y: number[]) => [
@@ -110,7 +111,7 @@ export class PredatorPrey extends DifferentialEquationView {
   constructor(elt0: string, elt1: string) {
     super(2, [elt0, elt1], PredatorPrey.sz, PredatorPrey.sz)
     this.eq = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1)
-    this.g[0].axes([0, 25],  [0, 4])
+    this.g[0].axes([0, this.end],  [0, 4])
     this.g[1].axes([0, 3], [0, 2])
   }
 
@@ -121,17 +122,7 @@ export class PredatorPrey extends DifferentialEquationView {
   }
 
   draw(initialData: number[] = this.initialData) {
-    let xpts: [number, number][] = []
-    let ypts: [number, number][] = []
-    let tpts: [number, number][] = []
-    this.solver.solve(this.eq, 0, initialData, 25, this.solver.grid(0.01, (x, y) => {
-      xpts.push([x, y[0]])
-      ypts.push([x, y[1]])
-      tpts.push([y[0], y[1]])
-    }))
-    this.g[0].draw(xpts, 'Pred')
-    this.g[0].draw(ypts, 'Prey')
-    this.g[1].draw(tpts, 'Phase')
+    this.phaseDraw(initialData, 0, this.end)
   }
 }
 
@@ -159,17 +150,7 @@ export class VanDerPol extends DifferentialEquationView {
   }
 
   draw(initialData: number[] = this.initialData) {
-    let xpts: [number, number][] = []
-    let ypts: [number, number][] = []
-    let tpts: [number, number][] = []
-    this.solver.solve(this.eq, 0, initialData, this.end, this.solver.grid(0.1, (x, y) => {
-      xpts.push([x, y[0]])
-      ypts.push([x, y[1]])
-      tpts.push([y[0], y[1]])
-    }))
-    this.g[0].draw(xpts, 'Pred')
-    this.g[0].draw(ypts, 'Prey')
-    this.g[1].draw(tpts)
+    this.phaseDraw(initialData, 0, this.end)
   }
 }
 
@@ -190,9 +171,8 @@ export class DrivenPendulum extends DifferentialEquationView {
     this.g[0].axes([0, this.end], [-Math.PI, Math.PI])
     this.g[0].wrap_pi = true
     this.g[0].points = true
-    //this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
-    this.g[1].axes([-10,10],[-10,10])
-    
+    // this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
+    this.g[1].axes([-10, 10], [-10, 10])
   }
   draw(initialData: number[] = this.initialData) {
     this.phaseDraw(initialData, 0, this.end, a => a.slice(1))

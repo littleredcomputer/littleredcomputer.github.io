@@ -35,7 +35,7 @@ var DifferentialEquationView = (function () {
         }));
         this.g[0].draw(xpts, 'Pred');
         this.g[0].draw(ypts, 'Prey');
-        this.g[1].draw(tpts);
+        this.g[1].draw(tpts, 'Phase');
     };
     return DifferentialEquationView;
 }());
@@ -79,7 +79,7 @@ var Lorenz = (function (_super) {
         this.tweak = function (e) {
             var xt = (e.offsetX - 500) / 2000;
             var yt = (e.offsetY - 500) / 2000;
-            _this.draw([_this.initialData[0] + xt, _this.initialData[1] + yt]);
+            _this.draw([1, _this.initialData[0] + xt, _this.initialData[1] + yt]);
         };
         this.eq = Lorenz.L(10, 28, 8 / 3);
         this.g[0].axes([-30, 30], [0, 50]);
@@ -105,6 +105,7 @@ var PredatorPrey = (function (_super) {
     function PredatorPrey(elt0, elt1) {
         var _this = this;
         _super.call(this, 2, [elt0, elt1], PredatorPrey.sz, PredatorPrey.sz);
+        this.end = 25;
         this.initialData = [1, 1];
         this.tweak = function (e) {
             var x = e.offsetX;
@@ -112,22 +113,12 @@ var PredatorPrey = (function (_super) {
             _this.draw([3 * x / PredatorPrey.sz, 2 - 2 * y / PredatorPrey.sz]);
         };
         this.eq = PredatorPrey.LV(2 / 3, 4 / 3, 1, 1);
-        this.g[0].axes([0, 25], [0, 4]);
+        this.g[0].axes([0, this.end], [0, 4]);
         this.g[1].axes([0, 3], [0, 2]);
     }
     PredatorPrey.prototype.draw = function (initialData) {
         if (initialData === void 0) { initialData = this.initialData; }
-        var xpts = [];
-        var ypts = [];
-        var tpts = [];
-        this.solver.solve(this.eq, 0, initialData, 25, this.solver.grid(0.01, function (x, y) {
-            xpts.push([x, y[0]]);
-            ypts.push([x, y[1]]);
-            tpts.push([y[0], y[1]]);
-        }));
-        this.g[0].draw(xpts, 'Pred');
-        this.g[0].draw(ypts, 'Prey');
-        this.g[1].draw(tpts, 'Phase');
+        this.phaseDraw(initialData, 0, this.end);
     };
     PredatorPrey.sz = 400;
     PredatorPrey.LV = function (a, b, c, d) { return function (x, y) { return [
@@ -155,17 +146,7 @@ var VanDerPol = (function (_super) {
     }
     VanDerPol.prototype.draw = function (initialData) {
         if (initialData === void 0) { initialData = this.initialData; }
-        var xpts = [];
-        var ypts = [];
-        var tpts = [];
-        this.solver.solve(this.eq, 0, initialData, this.end, this.solver.grid(0.1, function (x, y) {
-            xpts.push([x, y[0]]);
-            ypts.push([x, y[1]]);
-            tpts.push([y[0], y[1]]);
-        }));
-        this.g[0].draw(xpts, 'Pred');
-        this.g[0].draw(ypts, 'Prey');
-        this.g[1].draw(tpts);
+        this.phaseDraw(initialData, 0, this.end);
     };
     VanDerPol.sz = 400;
     VanDerPol.V = function (e) { return function (x, y) { return [
@@ -188,11 +169,11 @@ var DrivenPendulum = (function (_super) {
             var y = e.offsetY;
             _this.draw([0, _this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
         };
-        this.eq = DrivenPendulum.F(1, 0.1, 30 * Math.sqrt(9.8), 0, 9.8);
+        this.eq = DrivenPendulum.F(1, 0.1, Math.sqrt(9.8) / (2 * Math.PI), 0, 9.8);
         this.g[0].axes([0, this.end], [-Math.PI, Math.PI]);
         this.g[0].wrap_pi = true;
         this.g[0].points = true;
-        //this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
+        // this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
         this.g[1].axes([-10, 10], [-10, 10]);
     }
     DrivenPendulum.prototype.draw = function (initialData) {
