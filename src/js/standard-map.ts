@@ -10,7 +10,6 @@ export class StandardMap {
   constructor(K: number) {
     this.K = K
     this.PV = this.principal_value(this.twoPi)
-    console.log('SM constructor')
   }
 
   principal_value(cuthigh: number): (v: number) => number {
@@ -29,14 +28,14 @@ export class StandardMap {
     point(this.PV(theta + nI), this.PV(nI))
   }
 
-  generate = function*(theta: number, I: number, n: number) {
-    for (let i = 0; i < n; ++i) {
-      yield [theta, I]
-      let nI = I + (this.K * Math.sin(theta))
-      theta = this.PV(theta + nI)
-      I = this.PV(nI)
-    }
-  }
+  // generate = function*(theta: number, I: number, n: number) {
+  //   for (let i = 0; i < n; ++i) {
+  //     yield [theta, I]
+  //     let nI = I + (this.K * Math.sin(theta))
+  //     theta = this.PV(theta + nI)
+  //     I = this.PV(nI)
+  //   }
+  // }
 
   callback = function(theta: number, I: number, n: number, callback: (x: number, y: number) => void) {
     for (let i = 0; i < n; ++i) {
@@ -59,20 +58,16 @@ export class ExploreMap {
     this.context = this.canvas.getContext('2d')
     let [w, h] = [2 * Math.PI, 2 * Math.PI]
     this.canvas.onmousedown = (e: MouseEvent) => {
-      console.log(e)
       let [cx, cy] = [e.offsetX / this.context.canvas.width * w,
         h - e.offsetY / this.context.canvas.height * h]
       this.Explore(cx, cy)
     }
-    this.context.fillStyle = 'red'
     this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h)
     this.context.translate(0, -h)
-    this.context.fillStyle = 'green'
-    this.context.fillRect(Math.PI, Math.PI, 0.05, 0.1)
   }
 
   pt(x: number, y: number) {
-    this.context.fillStyle = 'rgba(0,0,255,0.3)'
+    this.context.fillStyle = 'rgba(23,64,170,0.3)'
     this.context.beginPath()
     this.context.arc(x, y, 0.01, 0, 2 * Math.PI)
     this.context.fill()
@@ -91,11 +86,11 @@ export class ExploreMap {
     }
   }
 
-  Explore1(x: number, y: number) {
-    for ([x, y] of this.M.generate(x, y, 1000)) {
-      this.pt(x, y)
-    }
-  }
+  // Explore1(x: number, y: number) {
+  //   for ([x, y] of this.M.generate(x, y, 1000)) {
+  //     this.pt(x, y)
+  //   }
+  // }
 
   Explore(x: number, y: number) {
     this.M.callback(x, y, 1000, this.pt.bind(this))
