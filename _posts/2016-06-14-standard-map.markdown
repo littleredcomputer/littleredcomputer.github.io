@@ -6,7 +6,7 @@ categories: math js
 using: katex
 ---
 
-<canvas id="c" width="400" height="400"></canvas>
+<canvas id="c" width="400" height="400" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <script src="/public/js/standard-map.bundle.js"></script>
 <script>
   var S = new standardmap.StandardMap(0.6)
