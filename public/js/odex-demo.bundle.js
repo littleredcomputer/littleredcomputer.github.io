@@ -10325,7 +10325,7 @@ var DifferentialEquationView = (function () {
             ypts.push([x, ys[1]]);
             tpts.push([ys[0], ys[1]]);
         }));
-        this.g[0].draw(xpts, 'Pred');
+        this.g[0].draw(xpts, 'Predator');
         this.g[0].draw(ypts, 'Prey');
         this.g[1].draw(tpts, 'Phase');
     };
@@ -10461,7 +10461,7 @@ var DrivenPendulum = (function (_super) {
             var y = e.offsetY;
             _this.draw([0, _this.g[1].x.invert(x), _this.g[1].y.invert(y)]);
         };
-        this.eq = DrivenPendulum.F(1, 0.1, 2 * Math.sqrt(9.8), 0, 9.8);
+        this.eq = DrivenPendulum.F(1, 0.01, 2 * Math.sqrt(9.8), 0, 9.8);
         this.g[0].axes([0, this.end], [-Math.PI, Math.PI]);
         this.g[0].wrap_pi = true;
         this.g[0].points = true;
@@ -10472,7 +10472,6 @@ var DrivenPendulum = (function (_super) {
         this.phaseDraw(initialData, 0, this.end, function (a) { return a.slice(1); });
     };
     DrivenPendulum.sz = 400;
-    DrivenPendulum.a = function (omega, phi) { return function (t) { return Math.cos(2 * Math.PI * omega * t + phi); }; };
     DrivenPendulum.F = function (l, a, omega, phi, g) { return function (x, _a) {
         var t = _a[0], theta = _a[1], thetadot = _a[2];
         var _1 = Math.sin(theta);

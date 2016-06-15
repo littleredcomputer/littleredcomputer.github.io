@@ -2,31 +2,40 @@
   * Created by colin on 6/14/16.
   */
 
-export class StandardMap {
+import {Solver, Derivative} from './node_modules/odex/src/odex'
+
+interface HamiltonMap {
+  evolve: (initialData: number[], n: number, callback: (x: number, y: number) => void) => void
+}
+
+const twoPi = Math.PI * 2
+
+export class StandardMap implements HamiltonMap {
   K: number
   PV: (x: number) => number
-  twoPi = 2 * Math.PI
+  static twoPi = 2 * Math.PI
 
   constructor(K: number) {
     this.K = K
-    this.PV = this.principal_value(this.twoPi)
+    this.PV = StandardMap.principal_value(twoPi)
   }
 
-  principal_value(cuthigh: number): (v: number) => number {
-    const cutlow = cuthigh - this.twoPi
+  static principal_value(cutHigh: number): (v: number) => number {
+    const cutLow = cutHigh - twoPi
     return function (x: number) {
-      if (cutlow <= x && x < cuthigh) {
+      if (cutLow <= x && x < cutHigh) {
         return x
       }
-      const y = x - this.twoPi * Math.floor(x / this.twoPi)
-      return y < cuthigh ? y : y - this.twoPi
+      const y = x - twoPi * Math.floor(x / twoPi)
+      return y < cutHigh ? y : y - twoPi
     }
   }
 
-  run(theta: number, I: number, point: (x: number, y: number) => void, fail: () => void) {
-    let nI = I + (this.K * Math.sin(theta))
-    point(this.PV(theta + nI), this.PV(nI))
-  }
+  // Interfaces we don't want right now (CPS & generators: see below)
+  // run(theta: number, I: number, point: (x: number, y: number) => void, fail: () => void) {
+  //   let nI = I + (this.K * Math.sin(theta))
+  //   point(this.PV(theta + nI), this.PV(nI))
+  // }
 
   // generate = function*(theta: number, I: number, n: number) {
   //   for (let i = 0; i < n; ++i) {
@@ -37,7 +46,8 @@ export class StandardMap {
   //   }
   // }
 
-  callback = function(theta: number, I: number, n: number, callback: (x: number, y: number) => void) {
+  evolve = function(initialData: number[], n: number, callback: (x: number, y: number) => void) {
+    let [theta, I] = initialData
     for (let i = 0; i < n; ++i) {
       callback(theta, I)
       let nI = I + (this.K * Math.sin(theta))
@@ -47,23 +57,65 @@ export class StandardMap {
   }
 }
 
+export class DrivenPendulumMap implements HamiltonMap {
+  d: Derivative
+  T: number
+  S: Solver
+  PV: (x: number) => number
+
+  static F: (m: number, l: number, a: number, omega: number, g: number) => Derivative =
+    (m, l, a, omega, g) => (x, [t, theta, p_theta]) => {
+      // let _1 = Math.sin(omega * t): this comes about from a bug in our CSE
+      let _2 = Math.pow(l, 2)
+      let _3 = omega * t
+      let _4 = Math.sin(theta)
+      let _5 = Math.cos(theta)
+      return [1,
+        (Math.sin(_3) * _4 * a * l * m * omega + p_theta) / _2 * m,
+        (- Math.pow(Math.sin(_3), 2) * _4 * _5 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - Math.sin(_3) * _5 * a * omega * p_theta - _4 * g * _2 * m) / l]
+    }
+
+  constructor() {
+    this.S = new Solver(3)
+    this.S.denseOutput = true
+    // this.S.absoluteTolerance = 1e-9
+    // this.S.relativeTolerance = 1e-9
+    const l = 1
+    const g = 9.8
+    const w0 = Math.sqrt(g / l)
+    const w = 2 * w0
+    this.T = 2 * Math.PI / w
+    const a = 0.1
+    console.log('l', l, 'a', a, 'w', w, 'g', g)
+    this.d = DrivenPendulumMap.F(1, l, a, w, g)
+    this.PV = StandardMap.principal_value(Math.PI)
+  }
+
+  evolve(initialData: number[], n: number, callback: (x: number, y: number) => void) {
+    this.S.solve(this.d, 0, [0].concat(initialData), 1000 * this.T, this.S.grid(this.T, (x, ys) => {
+      callback(this.PV(ys[1]), ys[2])
+    }))
+  }
+}
+
 export class ExploreMap {
   canvas: HTMLCanvasElement
-  M: StandardMap
+  M: HamiltonMap
   context: CanvasRenderingContext2D
 
-  constructor(canvas: string, M: StandardMap) {
+  constructor(canvas: string, M: StandardMap, xRange: number[], yRange: number[]) {
     this.canvas = <HTMLCanvasElement> document.getElementById(canvas)
     this.M = M
     this.context = this.canvas.getContext('2d')
-    let [w, h] = [2 * Math.PI, 2 * Math.PI]
+    let [w, h] = [xRange[1] - xRange[0], yRange[1] - yRange[0]]
+    console.log('w', w, 'h', h)
     this.canvas.onmousedown = (e: MouseEvent) => {
-      let [cx, cy] = [e.offsetX / this.context.canvas.width * w,
-        h - e.offsetY / this.context.canvas.height * h]
+      let [cx, cy] = [e.offsetX / this.context.canvas.width * w + xRange[0],
+        yRange[1] - e.offsetY / this.context.canvas.height * h]
       this.Explore(cx, cy)
     }
     this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h)
-    this.context.translate(0, -h)
+    this.context.translate(-xRange[0], -yRange[1])
   }
 
   pt(x: number, y: number) {
@@ -74,25 +126,28 @@ export class ExploreMap {
     this.context.closePath()
   }
 
-  Explore0(x: number, y: number) {
-    for (let i = 0; i < 1000; ++i) {
-      this.M.run(x, y, (xp: number, yp: number) => {
-        this.pt(xp, yp)
-        x = xp
-        y = yp
-      }, () => {
-        console.log('FAIL')
-      })
-    }
+  Explore(x: number, y: number) {
+    this.M.evolve([x, y], 1000, this.pt.bind(this))
   }
+
+  // We were considering some alternatives: the CPS of SICM, and generators.
+  // For simplicity in JS, though, the callback form can't really be beat.
+
+  // Explore0(x: number, y: number) {
+  //   for (let i = 0; i < 1000; ++i) {
+  //     this.M.run(x, y, (xp: number, yp: number) => {
+  //       this.pt(xp, yp)
+  //       x = xp
+  //       y = yp
+  //     }, () => {
+  //       console.log('FAIL')
+  //     })
+  //   }
+  // }
 
   // Explore1(x: number, y: number) {
   //   for ([x, y] of this.M.generate(x, y, 1000)) {
   //     this.pt(x, y)
   //   }
   // }
-
-  Explore(x: number, y: number) {
-    this.M.callback(x, y, 1000, this.pt.bind(this))
-  }
 }

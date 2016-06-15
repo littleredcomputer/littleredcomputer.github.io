@@ -31,7 +31,7 @@ g.axis {
   stroke: darkorange;
 }
 
-.line.Pred {
+.line.Predator {
   stroke: salmon;
   opacity: .8;
   stroke-width: 2px;
@@ -42,7 +42,7 @@ g.axis {
   opacity: .6;
   stroke-width: 2px;
 }
-circle.graph-point.Pred {
+circle.graph-point.Predator {
   fill: salmon;
 }
 circle.graph-point.Prey {
