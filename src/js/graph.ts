@@ -13,9 +13,7 @@ export class Graph {
   line: d3.svg.Line<[number, number]>
   wrap_pi: boolean = false
   points: boolean = false
-
   margin = { left: 30, right: 10, top: 5, bottom: 30 }
-
   constructor(element: string, width: number, height: number) {
     this.width = width - this.margin.left - this.margin.right
     this.height = height - this.margin.top - this.margin.bottom
@@ -65,14 +63,14 @@ export class Graph {
     if (this.points) {
       this.svg.selectAll('circle.graph-point.' + cls).remove()
       this.svg.selectAll('circle.graph-point.' + cls)
-      .data(data)
-      .enter()
-      .append('circle')
-      .attr('cx', d => this.x(d[0]))
-      .attr('cy', d => this.y(xf(d[1])))
-      .attr('r', 1)
-      .classed({'graph-point': true, cls: true})
-      .attr('class', 'graph-point ' + cls)
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', d => this.x(d[0]))
+        .attr('cy', d => this.y(xf(d[1])))
+        .attr('r', 1)
+        .classed({'graph-point': true, cls: true})
+        .attr('class', 'graph-point ' + cls)
     } else {
       this.svg.selectAll('path.' + cls).remove()
       this.svg.append('path').attr('class', cls)

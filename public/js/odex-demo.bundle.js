@@ -1,5 +1,4 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.odexdemo = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/// <reference path="typings/main/definitions/d3/index.d.ts" />
 "use strict";
 var d3 = require('d3');
 var Graph = (function () {
@@ -10303,9 +10302,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 var odex_1 = require('./node_modules/odex/src/odex');
 var graph_1 = require('./graph');
 var DifferentialEquationView = (function () {
-    // WHERE I LEFT OFF
-    // now need something like getEq, which is applied to the result
-    // of getParameters, to yield the equation to integrate
     function DifferentialEquationView(dim, elements, width, height) {
         var _this = this;
         this.g = [];
@@ -10469,7 +10465,6 @@ var DrivenPendulum = (function (_super) {
         this.g[0].axes([0, this.end], [-Math.PI, Math.PI]);
         this.g[0].wrap_pi = true;
         this.g[0].points = true;
-        // this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
         this.g[1].axes([-10, 10], [-10, 10]);
     }
     DrivenPendulum.prototype.draw = function (initialData) {

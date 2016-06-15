@@ -7,9 +7,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 var odex_1 = require('./node_modules/odex/src/odex');
 var graph_1 = require('./graph');
 var DifferentialEquationView = (function () {
-    // WHERE I LEFT OFF
-    // now need something like getEq, which is applied to the result
-    // of getParameters, to yield the equation to integrate
     function DifferentialEquationView(dim, elements, width, height) {
         var _this = this;
         this.g = [];
@@ -173,7 +170,6 @@ var DrivenPendulum = (function (_super) {
         this.g[0].axes([0, this.end], [-Math.PI, Math.PI]);
         this.g[0].wrap_pi = true;
         this.g[0].points = true;
-        // this.g[1].axes([-Math.PI, Math.PI], [-Math.PI, Math.PI])
         this.g[1].axes([-10, 10], [-10, 10]);
     }
     DrivenPendulum.prototype.draw = function (initialData) {
