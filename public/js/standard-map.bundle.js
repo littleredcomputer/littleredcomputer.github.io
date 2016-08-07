@@ -680,19 +680,15 @@ var StandardMap = (function () {
         this.K = K;
         this.PV = StandardMap.principal_value(twoPi);
     }
-    StandardMap.principal_value = function (cuthigh) {
-        var cutlow = cuthigh - twoPi;
+    StandardMap.principal_value = function (cutHigh) {
+        var cutLow = cutHigh - twoPi;
         return function (x) {
-            if (cutlow <= x && x < cuthigh) {
+            if (cutLow <= x && x < cutHigh) {
                 return x;
             }
             var y = x - twoPi * Math.floor(x / twoPi);
-            return y < cuthigh ? y : y - twoPi;
+            return y < cutHigh ? y : y - twoPi;
         };
-    };
-    StandardMap.prototype.run = function (theta, I, point, fail) {
-        var nI = I + (this.K * Math.sin(theta));
-        point(this.PV(theta + nI), this.PV(nI));
     };
     StandardMap.twoPi = 2 * Math.PI;
     return StandardMap;
@@ -720,12 +716,13 @@ var DrivenPendulumMap = (function () {
     };
     DrivenPendulumMap.F = function (m, l, a, omega, g) { return function (x, _a) {
         var t = _a[0], theta = _a[1], p_theta = _a[2];
-        var _1 = Math.sin(omega * t);
         var _2 = Math.pow(l, 2);
         var _3 = omega * t;
         var _4 = Math.sin(theta);
         var _5 = Math.cos(theta);
-        return [1, (Math.sin(_3) * _4 * a * l * m * omega + p_theta) / _2 * m, (-Math.pow(Math.sin(_3), 2) * _4 * _5 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - Math.sin(_3) * _5 * a * omega * p_theta - _4 * g * _2 * m) / l];
+        return [1,
+            (Math.sin(_3) * _4 * a * l * m * omega + p_theta) / _2 * m,
+            (-Math.pow(Math.sin(_3), 2) * _4 * _5 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - Math.sin(_3) * _5 * a * omega * p_theta - _4 * g * _2 * m) / l];
     }; };
     return DrivenPendulumMap;
 }());
@@ -733,6 +730,16 @@ exports.DrivenPendulumMap = DrivenPendulumMap;
 var ExploreMap = (function () {
     function ExploreMap(canvas, M, xRange, yRange) {
         var _this = this;
+        this.i = 0;
+        this.pt = function (x, y) {
+            if (_this.i % 100 === 0)
+                console.log(_this.i, 'pts');
+            _this.context.beginPath();
+            _this.context.arc(x, y, 0.01, 0, 2 * Math.PI);
+            _this.context.fill();
+            _this.context.closePath();
+            ++_this.i;
+        };
         this.canvas = document.getElementById(canvas);
         this.M = M;
         this.context = this.canvas.getContext('2d');
@@ -745,28 +752,12 @@ var ExploreMap = (function () {
         };
         this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h);
         this.context.translate(-xRange[0], -yRange[1]);
-    }
-    ExploreMap.prototype.pt = function (x, y) {
         this.context.fillStyle = 'rgba(23,64,170,0.3)';
-        this.context.beginPath();
-        this.context.arc(x, y, 0.01, 0, 2 * Math.PI);
-        this.context.fill();
-        this.context.closePath();
-    };
-    ExploreMap.prototype.Explore0 = function (x, y) {
-        var _this = this;
-        for (var i = 0; i < 1000; ++i) {
-            this.M.run(x, y, function (xp, yp) {
-                _this.pt(xp, yp);
-                x = xp;
-                y = yp;
-            }, function () {
-                console.log('FAIL');
-            });
-        }
-    };
+    }
     ExploreMap.prototype.Explore = function (x, y) {
-        this.M.evolve([x, y], 1000, this.pt.bind(this));
+        console.log('evolution start');
+        this.M.evolve([x, y], 1000, this.pt);
+        console.log('evolution end');
     };
     return ExploreMap;
 }());

@@ -31,21 +31,6 @@ export class StandardMap implements HamiltonMap {
     }
   }
 
-  // Interfaces we don't want right now (CPS & generators: see below)
-  // run(theta: number, I: number, point: (x: number, y: number) => void, fail: () => void) {
-  //   let nI = I + (this.K * Math.sin(theta))
-  //   point(this.PV(theta + nI), this.PV(nI))
-  // }
-
-  // generate = function*(theta: number, I: number, n: number) {
-  //   for (let i = 0; i < n; ++i) {
-  //     yield [theta, I]
-  //     let nI = I + (this.K * Math.sin(theta))
-  //     theta = this.PV(theta + nI)
-  //     I = this.PV(nI)
-  //   }
-  // }
-
   evolve = function(initialData: number[], n: number, callback: (x: number, y: number) => void) {
     let [theta, I] = initialData
     for (let i = 0; i < n; ++i) {
@@ -116,18 +101,24 @@ export class ExploreMap {
     }
     this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h)
     this.context.translate(-xRange[0], -yRange[1])
+    this.context.fillStyle = 'rgba(23,64,170,0.3)'
   }
 
-  pt(x: number, y: number) {
-    this.context.fillStyle = 'rgba(23,64,170,0.3)'
+  i: number = 0
+
+  pt = (x: number, y: number) => {
+    // if (this.i % 100 === 0) console.log(this.i, 'pts')
     this.context.beginPath()
     this.context.arc(x, y, 0.01, 0, 2 * Math.PI)
     this.context.fill()
     this.context.closePath()
+    ++this.i
   }
 
   Explore(x: number, y: number) {
-    this.M.evolve([x, y], 1000, this.pt.bind(this))
+    console.log('evolution start')
+    this.M.evolve([x, y], 1000, this.pt)
+    console.log('evolution end')
   }
 
   // We were considering some alternatives: the CPS of SICM, and generators.

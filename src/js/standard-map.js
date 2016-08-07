@@ -65,6 +65,14 @@ exports.DrivenPendulumMap = DrivenPendulumMap;
 var ExploreMap = (function () {
     function ExploreMap(canvas, M, xRange, yRange) {
         var _this = this;
+        this.i = 0;
+        this.pt = function (x, y) {
+            _this.context.beginPath();
+            _this.context.arc(x, y, 0.01, 0, 2 * Math.PI);
+            _this.context.fill();
+            _this.context.closePath();
+            ++_this.i;
+        };
         this.canvas = document.getElementById(canvas);
         this.M = M;
         this.context = this.canvas.getContext('2d');
@@ -77,16 +85,12 @@ var ExploreMap = (function () {
         };
         this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h);
         this.context.translate(-xRange[0], -yRange[1]);
-    }
-    ExploreMap.prototype.pt = function (x, y) {
         this.context.fillStyle = 'rgba(23,64,170,0.3)';
-        this.context.beginPath();
-        this.context.arc(x, y, 0.01, 0, 2 * Math.PI);
-        this.context.fill();
-        this.context.closePath();
-    };
+    }
     ExploreMap.prototype.Explore = function (x, y) {
-        this.M.evolve([x, y], 1000, this.pt.bind(this));
+        console.log('evolution start');
+        this.M.evolve([x, y], 1000, this.pt);
+        console.log('evolution end');
     };
     return ExploreMap;
 }());
