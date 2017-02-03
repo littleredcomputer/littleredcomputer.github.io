@@ -25,7 +25,7 @@ These solutions of the Lorenz equations are projected into the
 Solution:
 <div id='graph1'></div>
 
-<script src="/public/js/odex-demo.bundle.js"></script>
+<script src="/public/js/odex-demo.bundle.min.js"></script>
 <script>
   var l = new odexdemo.Lorenz('graph1').draw();
 </script>

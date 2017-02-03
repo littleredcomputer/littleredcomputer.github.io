@@ -1,7 +1,10 @@
 var gulp = require('gulp')
 var browserify = require('browserify')
+var streamify = require('gulp-streamify')
+var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
 var tsify = require('tsify')
+var uglify = require('gulp-uglify')
 
 args = {
   src: 'js/',
@@ -14,6 +17,9 @@ function bundle_ts(f, s) {
     .plugin(tsify, {global: true})
     .bundle()
     .pipe(source(f + '.bundle.js'))
+    .pipe(gulp.dest(args.dest))
+    .pipe(streamify(uglify()))
+    .pipe(rename({extname: '.min.js'}))
     .pipe(gulp.dest(args.dest));
 }
 

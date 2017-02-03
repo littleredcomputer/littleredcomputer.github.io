@@ -12,7 +12,7 @@ equations in the browser with [odex][odex].
 <div id='graph'></div>
 <div id='phase'></div>
 
-<script src="/public/js/odex-demo.bundle.js"></script>
+<script src="/public/js/odex-demo.bundle.min.js"></script>
 <script>
   new odexdemo.VanDerPol('graph', 'phase').draw();
 </script>

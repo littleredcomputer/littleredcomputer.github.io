@@ -39,7 +39,6 @@ var DrivenPendulumMap = (function () {
         var w = 2 * w0;
         this.T = 2 * Math.PI / w;
         var a = 0.1;
-        console.log('l', l, 'a', a, 'w', w, 'g', g);
         this.d = DrivenPendulumMap.F(1, l, a, w, g);
         this.PV = StandardMap.principal_value(Math.PI);
     }
@@ -77,7 +76,6 @@ var ExploreMap = (function () {
         this.M = M;
         this.context = this.canvas.getContext('2d');
         var _a = [xRange[1] - xRange[0], yRange[1] - yRange[0]], w = _a[0], h = _a[1];
-        console.log('w', w, 'h', h);
         this.canvas.onmousedown = function (e) {
             var _a = [e.offsetX / _this.context.canvas.width * w + xRange[0],
                 yRange[1] - e.offsetY / _this.context.canvas.height * h], cx = _a[0], cy = _a[1];
@@ -88,9 +86,7 @@ var ExploreMap = (function () {
         this.context.fillStyle = 'rgba(23,64,170,0.3)';
     }
     ExploreMap.prototype.Explore = function (x, y) {
-        console.log('evolution start');
         this.M.evolve([x, y], 1000, this.pt);
-        console.log('evolution end');
     };
     return ExploreMap;
 }());

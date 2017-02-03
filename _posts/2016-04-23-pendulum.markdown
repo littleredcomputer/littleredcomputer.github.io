@@ -12,7 +12,7 @@ equations in the browser with [odex][odex].
 <div id='graph'></div>
 <div id='phase'></div>
 <input id='r' type='range'/>
-<script src="/public/js/odex-demo.bundle.js"></script>
+<script src="/public/js/odex-demo.bundle.min.js"></script>
 <script>
   new odexdemo.DrivenPendulum('graph', 'phase').draw();
 </script>
