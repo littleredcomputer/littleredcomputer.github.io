@@ -24,7 +24,6 @@ function bundle_ts(f, s) {
 }
 
 gulp.task('bundle', function () {
-  // bundle with dependencies
   bundle_ts('odex-demo', 'odexdemo')
   bundle_ts('standard-map', 's')
 })
