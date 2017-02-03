@@ -1,32 +1,33 @@
-/// <reference path="typings/main/definitions/d3/index.d.ts" />
 
-import d3 = require('d3')
+import * as d3 from 'd3'
+import {BaseType} from "d3-selection";
 
 export class Graph {
   width: number
   height: number
-  x: d3.scale.Linear<number, number>
-  y: d3.scale.Linear<number, number>
-  xAxis: d3.svg.Axis
-  yAxis: d3.svg.Axis
-  svg: d3.Selection<any>
-  line: d3.svg.Line<[number, number]>
+  x: d3.ScaleLinear<number, number>
+  y: d3.ScaleLinear<number, number>
+  xAxis: d3.Axis<any>  // TODO: type can become stricter after https://github.com/DefinitelyTyped/DefinitelyTyped/pull/13315 lands
+  yAxis: d3.Axis<any>  // TODO: ditto
+  svg: d3.Selection<BaseType, {}, HTMLElement, any>
+  line: d3.Line<[number, number]>
   wrap_pi: boolean = false
   points: boolean = false
   margin = { left: 30, right: 10, top: 5, bottom: 30 }
   constructor(element: string, width: number, height: number) {
     this.width = width - this.margin.left - this.margin.right
     this.height = height - this.margin.top - this.margin.bottom
-    this.x = d3.scale.linear().range([0, this.width])
-    this.y = d3.scale.linear().range([this.height, 0])
-    this.xAxis = d3.svg.axis().scale(this.x).orient('bottom')
-    this.yAxis = d3.svg.axis().scale(this.y).orient('left')
+    this.x = d3.scaleLinear().range([0, this.width])
+    this.y = d3.scaleLinear().range([this.height, 0])
+
+    this.xAxis = d3.axisBottom(this.x) // d3.svg.axis().scale(this.x).orient('bottom')
+    this.yAxis = d3.axisLeft(this.y) // svg.axis().scale(this.y).orient('left')
     this.svg = d3.select(element).append('svg')
       .attr('width', width)
       .attr('height', height)
       .append('g')
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
-    this.line = d3.svg.line()
+    this.line = d3.line()
       .x(d => this.x(d[0]))
       .y(d => this.y(this.wrap_pi ? Graph.wrap_pi(d[1]) : d[1]))
   }
@@ -41,7 +42,7 @@ export class Graph {
     return a
   }
 
-  axes(xDomain: [number, number], yDomain: [number, number]) {
+  axes(xDomain: Array<number>, yDomain: number[]) {
     this.x.domain(xDomain)
     this.y.domain(yDomain)
     this.drawAxes()
@@ -66,16 +67,16 @@ export class Graph {
         .data(data)
         .enter()
         .append('circle')
-        .attr('cx', d => this.x(d[0]))
-        .attr('cy', d => this.y(xf(d[1])))
+        .attr('cx', (d: number[]) => this.x(d[0]))
+        .attr('cy', (d: number[]) => this.y(xf(d[1])))
         .attr('r', 1)
-        .classed({'graph-point': true, cls: true})
+        .classed(cls + ' graph-point', true)
         .attr('class', 'graph-point ' + cls)
     } else {
       this.svg.selectAll('path.' + cls).remove()
       this.svg.append('path').attr('class', cls)
         .datum(data)
-        .classed({line: true, cls: true})
+        .classed(cls + ' line', true)
         .attr('d', this.line)
     }
   }

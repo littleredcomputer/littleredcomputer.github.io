@@ -1,5 +1,5 @@
 "use strict";
-var odex_1 = require('./node_modules/odex/src/odex');
+var odex_1 = require('odex/src/odex');
 var twoPi = Math.PI * 2;
 var StandardMap = (function () {
     function StandardMap(K) {

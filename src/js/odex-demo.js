@@ -4,8 +4,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var odex_1 = require('./node_modules/odex/src/odex');
 var graph_1 = require('./graph');
+var odex_1 = require('odex/src/odex');
 var DifferentialEquationView = (function () {
     function DifferentialEquationView(dim, elements, width, height) {
         var _this = this;

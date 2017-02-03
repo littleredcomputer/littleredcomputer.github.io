@@ -11,10 +11,10 @@ using: katex
 
 <script src="/public/js/standard-map.bundle.js"></script>
 <script>
-  var S = new standardmap.StandardMap(0.6)
-  var M = new standardmap.ExploreMap('s', S, [0, 2*Math.PI], [0, 2*Math.PI])
-  var P = new standardmap.DrivenPendulumMap()
-  var N = new standardmap.ExploreMap('p', P, [-Math.PI, Math.PI], [-10, 10])
+  var S = new s.StandardMap(0.6)
+  var M = new s.ExploreMap('s', S, [0, 2*Math.PI], [0, 2*Math.PI])
+  var P = new s.DrivenPendulumMap()
+  var N = new s.ExploreMap('p', P, [-Math.PI, Math.PI], [-10, 10])
   //N.context.fillStyle = 'red'
   //N.context.fillRect(0,0,2,2);
 </script>

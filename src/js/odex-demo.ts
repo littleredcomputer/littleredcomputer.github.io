@@ -1,5 +1,5 @@
-import {Solver, Derivative} from './node_modules/odex/src/odex'
 import {Graph} from './graph'
+import {Solver, Derivative} from 'odex/src/odex'
 
 class DifferentialEquationView {
   g: Graph[] = []
