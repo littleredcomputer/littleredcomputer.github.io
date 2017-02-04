@@ -8,6 +8,11 @@
   },
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@types/d3": "^4.4.1",
+    "d3": "^4.5.0",
+    "odex": "^2.0.1"
+  },
   "devDependencies": {
     "browserify": "^14.0.0",
     "gulp": "^3.9.1",

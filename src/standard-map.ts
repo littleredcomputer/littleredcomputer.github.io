@@ -2,7 +2,7 @@
  * Created by colin on 6/14/16.
  */
 
-import {Solver, Derivative} from 'odex/src/odex'
+import {Solver, Derivative} from '../../odex/src/odex'
 
 interface HamiltonMap {
   evolve: (initialData: number[], n: number, callback: (x: number, y: number) => void) => void

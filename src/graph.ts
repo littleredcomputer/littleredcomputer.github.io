@@ -1,6 +1,6 @@
 
 import * as d3 from 'd3'
-import {BaseType} from "d3-selection";
+import {BaseType} from 'd3-selection'
 
 export class Graph {
   width: number

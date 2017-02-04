@@ -7,13 +7,13 @@ var tsify = require('tsify')
 var uglify = require('gulp-uglify')
 
 args = {
-  src: 'js/',
+  src: '.',
   dest: '../public/js'
 }
 
 function bundle_ts(f, s) {
   browserify({debug: true, standalone: s})
-    .add(args.src + f + '.ts')
+    .add(args.src + '/' + f + '.ts')
     .plugin(tsify, {global: true})
     .bundle()
     .pipe(source(f + '.bundle.js'))
