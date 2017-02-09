@@ -13,8 +13,7 @@ args = {
 }
 
 function bundle_ts(f, s) {
-  return browserify({debug: true, standalone: s})
-    .add(args.src + '/' + f + '.ts')
+  return browserify(args.src + '/' + f + '.ts', {debug: true, standalone: s})
     .plugin(tsify, {global: true})
     .bundle()
     .pipe(source(f + '.bundle.js'))
@@ -33,15 +32,13 @@ gulp.task('standard-bundle', function () {
 })
 
 gulp.task('watch', function () {
-  console.log('here1')
-  watch('odex-demo.ts', function (f, done) {
+  watch('odex-demo.ts', function () {
     gulp.start('odex-bundle')
   })
-  console.log('here2')
-  watch('standard-map.ts', function (f) {
+  watch('standard-map.ts', function () {
     gulp.start('standard-bundle')
   })
 })
 
-gulp.task('default', ['sources', 'odex-bundle', 'standard-bundle'])
+gulp.task('default', ['odex-bundle', 'standard-bundle'])
 
