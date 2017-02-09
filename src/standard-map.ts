@@ -116,25 +116,4 @@ export class ExploreMap {
   Explore(x: number, y: number) {
     this.M.evolve([x, y], 1000, this.pt)
   }
-
-  // We were considering some alternatives: the CPS of SICM, and generators.
-  // For simplicity in JS, though, the callback form can't really be beat.
-
-  // Explore0(x: number, y: number) {
-  //   for (let i = 0; i < 1000; ++i) {
-  //     this.M.run(x, y, (xp: number, yp: number) => {
-  //       this.pt(xp, yp)
-  //       x = xp
-  //       y = yp
-  //     }, () => {
-  //       console.log('FAIL')
-  //     })
-  //   }
-  // }
-
-  // Explore1(x: number, y: number) {
-  //   for ([x, y] of this.M.generate(x, y, 1000)) {
-  //     this.pt(x, y)
-  //   }
-  // }
 }
