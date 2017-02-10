@@ -6,12 +6,12 @@ using: katex
 ---
 
 <div><input type="range" id="wRange" min="0" max="60" value="6.2" style="width:200px" step="0.2"/></div>
-<canvas id="p" width="400" height="400" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
+<canvas id="p" width="320" height="320" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
+<canvas id="a" width="320" height="320" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <div>θ<sub>0</sub>: <span id="theta0"></span>, θ&#x0307;<sub>0</sub>: <span id="thetadot0"></span></div>
 <br/>
 <button id="go">go</button>
 
-<canvas id="a" width="400" height="400" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 
 <script src="/public/js/standard-map.bundle.min.js"></script>
 <script>
