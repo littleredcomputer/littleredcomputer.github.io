@@ -83,10 +83,10 @@ export class DrivenPendulumMap implements HamiltonMap, DE {
   generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void) {
     let params = this.paramfn()
     console.log('params', params)
-    let T = 2 * Math.PI / params.omega
-    let t1 = 1000 * T
+    let period = 2 * Math.PI / params.omega
+    let t1 = 1000 * period
     let H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8)
-    this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(T, (t: number, ys: number[]) => callback(this.PV(ys[1]), ys[2])))
+    this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(period, (t: number, ys: number[]) => callback(this.PV(ys[1]), ys[2])))
   }
 
   evolve(initialData: number[], t1: number, dt: number, callback: (x: number, ys: number[]) => void) {

@@ -5,7 +5,11 @@ categories: math js
 using: katex
 ---
 
-<div><input type="range" id="wRange" min="0" max="60" value="6.2" style="width:200px" step="0.2"/></div>
+<div>&omega;: <input type="range" id="wRange" min="0" max="60" value="6.2" style="width:200px" step="0.2"/>
+  <span id="wValue"></span>
+  &nbsp;&nbsp;t<sub>1</sub>: <input type="range" id="tRange" min="10" max="60" value="10" step="5"/>
+  <span id="tValue"></span>
+</div>
 <canvas id="p" width="320" height="320" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <canvas id="a" width="320" height="320" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <div>θ<sub>0</sub>: <span id="theta0"></span>, θ&#x0307;<sub>0</sub>: <span id="thetadot0"></span></div>
@@ -17,9 +21,10 @@ using: katex
 <script>
   var amplitude = 0.1
   var omega = document.getElementById('wRange')
+  var tRange = document.getElementById('tRange')
   var ic = new Array(2)
   var P = new s.DrivenPendulumMap(function() {
-    return {a: amplitude, omega: +omega.value}
+    return {a: amplitude, omega: +omega.value, T: +tRange.value}
   })
   var aw = 1.3 // animation logical half-width
   var anim = document.getElementById('a')
@@ -40,12 +45,15 @@ using: katex
     document.getElementById('p')
       .getContext('2d')
       .clearRect(-Math.PI, -10, 2*Math.PI, 20)
-    console.log('value is now', e.target.value)
-    
+    document.getElementById('wValue').textContent = (+e.target.value).toFixed(1)
   })
+  tRange.addEventListener('change', function(e) {
+    document.getElementById('tValue').textContent = e.target.value
+  })
+  
   document.getElementById('go').addEventListener('click', function(c) {
     var dt = 1/60
-    var T = 10
+    var T = +tRange.value
     var n = Math.ceil(T/dt)
     var A = new Array(n)
     var i = 0
