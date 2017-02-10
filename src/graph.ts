@@ -8,8 +8,8 @@ export class Graph {
   height: number
   x: ScaleLinear<number, number>
   y: ScaleLinear<number, number>
-  xAxis: d3.Axis<any>  // TODO: type can become stricter after https://github.com/DefinitelyTyped/DefinitelyTyped/pull/13315 lands
-  yAxis: d3.Axis<any>  // TODO: ditto
+  xAxis: d3.Axis<number>
+  yAxis: d3.Axis<number>
   svg: d3.Selection<BaseType, {}, HTMLElement, any>
   line: d3.Line<[number, number]>
   wrap_pi: boolean = false
@@ -21,8 +21,8 @@ export class Graph {
     this.x = scaleLinear().range([0, this.width])
     this.y = scaleLinear().range([this.height, 0])
 
-    this.xAxis = axisBottom(this.x) // d3.svg.axis().scale(this.x).orient('bottom')
-    this.yAxis = axisLeft(this.y) // svg.axis().scale(this.y).orient('left')
+    this.xAxis = <d3.Axis<number>>axisBottom(this.x) // d3.svg.axis().scale(this.x).orient('bottom')
+    this.yAxis = <d3.Axis<number>>axisLeft(this.y) // svg.axis().scale(this.y).orient('left')
     this.svg = select(element).append('svg')
       .attr('width', width)
       .attr('height', height)
