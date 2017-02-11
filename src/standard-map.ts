@@ -105,7 +105,7 @@ export class ExploreMap {
   context: CanvasRenderingContext2D
   onExplore: (x: number, y: number) => void
 
-  constructor(canvas: string, M: StandardMap, xRange: number[], yRange: number[]) {
+  constructor(canvas: string, M: HamiltonMap, xRange: number[], yRange: number[]) {
     this.canvas = <HTMLCanvasElement> document.getElementById(canvas)
     this.M = M
     this.context = this.canvas.getContext('2d')
