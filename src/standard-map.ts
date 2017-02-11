@@ -237,3 +237,142 @@ export class DrivenPendulumAnimation {
     }
   }
 }
+
+interface DoubleParams {
+  l1: number
+  m1: number
+  l2: number
+  m2: number
+}
+
+class DoublePendulumMap implements DifferentialEquation {
+  paramfn: () => DoubleParams
+  params: DoubleParams
+  S: Solver
+
+  LagrangeSysder(l1: number, m1: number, l2: number, m2: number): Derivative {
+    const g = 9.8
+    return (x, [t, theta, phi, thetadot, phidot]) => {
+      // let _1 = Math.cos(- phi + theta)
+      let _2 = Math.pow(phidot, 2)
+      let _3 = Math.sin(phi)
+      // let _4 = Math.sin(- phi + theta)
+      let _5 = - phi
+      // let _6 = Math.pow(Math.sin(- phi + theta), 2)
+      let _7 = Math.sin(theta)
+      let _8 = Math.pow(thetadot, 2)
+      // let _9 = - phi + theta
+      return [1,
+        thetadot,
+        phidot,
+        (- Math.sin(_5 + theta) * Math.cos(_5 + theta) * l1 * m2 * _8 - Math.sin(_5 + theta) * l2 * m2 * _2 + Math.cos(_5 + theta) * _3 * g * m2 - _7 * g * m1 - _7 * g * m2) / (Math.pow(Math.sin(_5 + theta), 2) * l1 * m2 + l1 * m1),
+        (Math.sin(_5 + theta) * Math.cos(_5 + theta) * l2 * m2 * _2 + Math.sin(_5 + theta) * l1 * m1 * _8 + Math.sin(_5 + theta) * l1 * m2 * _8 + _7 * Math.cos(_5 + theta) * g * m1 + _7 * Math.cos(_5 + theta) * g * m2 - _3 * g * m1 - _3 * g * m2) / (Math.pow(Math.sin(_5 + theta), 2) * l2 * m2 + l2 * m1)]
+    }
+  }
+
+  constructor(paramfn: () => {l1: number, m1: number, l2: number, m2: number}) {
+    this.paramfn = paramfn
+    this.S = new Solver(5)
+    this.S.denseOutput = true
+    this.S.absoluteTolerance = 1e-8
+  }
+
+  evolve(initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void {
+    let p = this.paramfn()
+    console.log('params', this.params)
+    let L = this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2)
+    this.params = p
+    this.S.solve(L, 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
+  }
+}
+
+export class DoublePendulumAnimation {
+  animLogicalSize = 1.3
+  ctx: CanvasRenderingContext2D
+  data: number[][]
+  frameStart: number
+  frameIndex: number
+  animating: boolean
+  params: DoubleParams
+  valueUpdater(toId: string) {
+    return (e: Event) => document.getElementById(toId).textContent = (<HTMLInputElement>e.target).value
+  }
+
+  constructor(o: {
+    theta0RangeId: string,
+    theta0ValueId: string,
+    phi0RangeId: string,
+    phi0ValueId: string,
+    tRangeId: string,
+    tValueId: string,
+    animId: string,
+    goButtonId: string
+  }) {
+    this.animating = false
+    let deg2rad = (d: number) => d * 2 * Math.PI / 360
+    let theta0Range = <HTMLInputElement>document.getElementById(o.theta0RangeId)
+    theta0Range.addEventListener('change', this.valueUpdater(o.theta0ValueId))
+    let phi0Range = <HTMLInputElement>document.getElementById(o.phi0RangeId)
+    phi0Range.addEventListener('change', this.valueUpdater(o.phi0ValueId))
+    let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
+    tRange.addEventListener('change', this.valueUpdater(o.tValueId))
+    let anim = <HTMLCanvasElement>document.getElementById(o.animId)
+    this.ctx = anim.getContext('2d')
+    this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
+    this.ctx.translate(this.animLogicalSize, -this.animLogicalSize)
+    let paramfn = () => ({l1: 0.5, m1: 0.5, l2: 0.5, m2: 0.5})
+    let diffEq = new DoublePendulumMap(paramfn)
+    document.getElementById(o.goButtonId).addEventListener('click', () =>  {
+      let dt = 1 / 60
+      let t1 = +tRange.value
+      let n = Math.ceil(t1 / dt)
+      this.data = new Array(n)
+      let i = 0
+      let p0 = performance.now()
+      this.params = paramfn()
+      diffEq.evolve([deg2rad(+theta0Range.value), deg2rad(+phi0Range.value), 0, 0], t1, dt, (x, ys) => {this.data[i++] = ys})
+      console.log('evolution in', (performance.now() - p0).toFixed(2), 'msec')
+      this.frameIndex = 0
+      if (!this.animating) {
+        this.animating = true
+        requestAnimationFrame(this.frame)
+      }
+    })
+  }
+  frame = () => {
+    this.ctx.clearRect(-this.animLogicalSize, -this.animLogicalSize, 2 * this.animLogicalSize, 2 * this.animLogicalSize)
+    let d = this.data[this.frameIndex]
+    console.log('frameIndex', this.frameIndex, 'd', this.data[this.frameIndex])
+    let theta = d[1], phi = d[2]
+    const c = this.ctx
+    const p = this.params
+    let x0 = 0, y0 = 0
+    let x1 = p.l1 * Math.sin(theta), y1 = -p.l1 * Math.cos(theta)
+    let x2 = x1 + p.l2 * Math.sin(phi), y2 = y1 - p.l2 * Math.cos(phi)
+    c.lineWidth = 0.025
+    c.strokeStyle = '#888'
+    c.beginPath()
+    c.moveTo(x0, y0)
+    c.lineTo(x1, y1)
+    c.lineTo(x2, y2)
+    c.stroke()
+    c.fillStyle = '#f00'
+    c.beginPath()
+    c.moveTo(x0, y0)
+    c.arc(x0, y0, 0.05, 0, Math.PI * 2)
+    c.moveTo(x1, y1)
+    c.arc(x1, y1, 0.1, 0, Math.PI * 2)
+    c.moveTo(x2, y2)
+    c.arc(x2, y2, 0.1, 0, Math.PI * 2)
+    c.fill()
+
+    ++this.frameIndex
+    if (this.frameIndex < this.data.length) {
+      window.requestAnimationFrame(this.frame)
+    } else {
+      this.animating = false
+      let et = (performance.now() - this.frameStart) / 1e3
+      console.log('animation done', (this.data.length / et).toFixed(2), 'fps')
+    }
+  }
+}
