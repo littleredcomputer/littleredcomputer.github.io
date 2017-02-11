@@ -5,7 +5,11 @@
 import {Solver, Derivative} from 'odex/src/odex'
 
 interface HamiltonMap {
-  evolve: (initialData: number[], n: number, callback: (x: number, y: number) => void) => void
+  generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void): void
+}
+
+interface DE {
+  evolve(initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void
 }
 
 const twoPi = Math.PI * 2
@@ -31,7 +35,7 @@ export class StandardMap implements HamiltonMap {
     }
   }
 
-  evolve = function(initialData: number[], n: number, callback: (x: number, y: number) => void) {
+  generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void) {
     let [theta, I] = initialData
     for (let i = 0; i < n; ++i) {
       callback(theta, I)
@@ -42,43 +46,56 @@ export class StandardMap implements HamiltonMap {
   }
 }
 
-export class DrivenPendulumMap implements HamiltonMap {
-  d: Derivative
-  T: number
+export class DrivenPendulumMap implements HamiltonMap, DE {
+
+  paramfn: () => {a: number, omega: number}
   S: Solver
   PV: (x: number) => number
 
-  static F: (m: number, l: number, a: number, omega: number, g: number) => Derivative =
-    (m, l, a, omega, g) => (x, [t, theta, p_theta]) => {
-      // let _1 = Math.sin(omega * t): this comes about from a bug in our CSE
+  HamiltonSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
+    return (x, [t, theta, p_theta]) => {
+      let _1 = Math.sin(omega * t)
       let _2 = Math.pow(l, 2)
       let _3 = omega * t
       let _4 = Math.sin(theta)
       let _5 = Math.cos(theta)
       return [1,
-        (Math.sin(_3) * _4 * a * l * m * omega + p_theta) / _2 * m,
-        (- Math.pow(Math.sin(_3), 2) * _4 * _5 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - Math.sin(_3) * _5 * a * omega * p_theta - _4 * g * _2 * m) / l]
+        (Math.sin(_3) * _4 * a * l * m * omega + p_theta) / (_2 * m),
+        (- Math.pow(Math.sin(_3), 2) * _5 * _4 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - Math.sin(_3) * _5 * a * omega * p_theta - _4 * g * _2 * m) / l]
     }
+  }
 
-  constructor() {
+  LagrangeSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
+    return (x, [t, theta, thetadot]) => {
+      let _1 = Math.sin(theta)
+      return [1, thetadot, (_1 * Math.cos(omega * t) * a * Math.pow(omega, 2) - _1 * g) / l]
+    }
+  }
+
+  constructor(paramfn: () => {a: number, omega: number}) {
+    this.paramfn = paramfn
     this.S = new Solver(3)
     this.S.denseOutput = true
-    // this.S.absoluteTolerance = 1e-9
-    // this.S.relativeTolerance = 1e-9
-    const l = 1
-    const g = 9.8
-    const w0 = Math.sqrt(g / l)
-    const w = 2 * w0
-    this.T = 2 * Math.PI / w
-    const a = 0.1
-    this.d = DrivenPendulumMap.F(1, l, a, w, g)
+    this.S.absoluteTolerance = 1e-8
     this.PV = StandardMap.principal_value(Math.PI)
   }
 
-  evolve(initialData: number[], n: number, callback: (x: number, y: number) => void) {
-    this.S.solve(this.d, 0, [0].concat(initialData), 1000 * this.T, this.S.grid(this.T, (x, ys) => {
-      callback(this.PV(ys[1]), ys[2])
-    }))
+  generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void) {
+    let params = this.paramfn()
+    console.log('params', params)
+    let period = 2 * Math.PI / params.omega
+    let t1 = 1000 * period
+    let H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8)
+    this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(period, (t: number, ys: number[]) => callback(this.PV(ys[1]), ys[2])))
+  }
+
+  evolve(initialData: number[], t1: number, dt: number, callback: (x: number, ys: number[]) => void) {
+    let params = this.paramfn()
+    console.log('params', params)
+    let L = this.LagrangeSysder(1, 1, params.omega, params.a, 9.8)
+    let p0 = performance.now()
+    this.S.solve(L, 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
+    console.log('evolution took', (performance.now() - p0).toFixed(2), 'msec')
   }
 }
 
@@ -86,8 +103,9 @@ export class ExploreMap {
   canvas: HTMLCanvasElement
   M: HamiltonMap
   context: CanvasRenderingContext2D
+  onExplore: (x: number, y: number) => void
 
-  constructor(canvas: string, M: StandardMap, xRange: number[], yRange: number[]) {
+  constructor(canvas: string, M: HamiltonMap, xRange: number[], yRange: number[]) {
     this.canvas = <HTMLCanvasElement> document.getElementById(canvas)
     this.M = M
     this.context = this.canvas.getContext('2d')
@@ -95,15 +113,18 @@ export class ExploreMap {
     this.canvas.onmousedown = (e: MouseEvent) => {
       let [cx, cy] = [e.offsetX / this.context.canvas.width * w + xRange[0],
         yRange[1] - e.offsetY / this.context.canvas.height * h]
+      let p0 = performance.now()
       this.Explore(cx, cy)
+      console.log('exploration', (performance.now() - p0).toFixed(2), 'msec')
+      this.onExplore && this.onExplore(cx, cy)
     }
     this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h)
     this.context.translate(-xRange[0], -yRange[1])
-    this.context.fillStyle = 'rgba(23,64,170,0.3)'
+    this.context.fillStyle = 'rgba(23,64,170,0.5)'
   }
-
   i: number = 0
 
+  // since pt is invoked in callback position, we want to define it as an instance arrow function
   pt = (x: number, y: number) => {
     // if (this.i % 100 === 0) console.log(this.i, 'pts')
     this.context.beginPath()
@@ -114,27 +135,6 @@ export class ExploreMap {
   }
 
   Explore(x: number, y: number) {
-    this.M.evolve([x, y], 1000, this.pt)
+    this.M.generateSection([x, y], 1000, this.pt)
   }
-
-  // We were considering some alternatives: the CPS of SICM, and generators.
-  // For simplicity in JS, though, the callback form can't really be beat.
-
-  // Explore0(x: number, y: number) {
-  //   for (let i = 0; i < 1000; ++i) {
-  //     this.M.run(x, y, (xp: number, yp: number) => {
-  //       this.pt(xp, yp)
-  //       x = xp
-  //       y = yp
-  //     }, () => {
-  //       console.log('FAIL')
-  //     })
-  //   }
-  // }
-
-  // Explore1(x: number, y: number) {
-  //   for ([x, y] of this.M.generate(x, y, 1000)) {
-  //     this.pt(x, y)
-  //   }
-  // }
 }

@@ -1,14 +1,15 @@
-
-import * as d3 from 'd3'
-import {BaseType} from 'd3-selection'
+import {ScaleLinear, scaleLinear} from 'd3-scale'
+import {BaseType, select} from 'd3-selection'
+import {axisBottom, axisLeft} from 'd3-axis'
+import {line} from 'd3-shape'
 
 export class Graph {
   width: number
   height: number
-  x: d3.ScaleLinear<number, number>
-  y: d3.ScaleLinear<number, number>
-  xAxis: d3.Axis<any>  // TODO: type can become stricter after https://github.com/DefinitelyTyped/DefinitelyTyped/pull/13315 lands
-  yAxis: d3.Axis<any>  // TODO: ditto
+  x: ScaleLinear<number, number>
+  y: ScaleLinear<number, number>
+  xAxis: d3.Axis<number>
+  yAxis: d3.Axis<number>
   svg: d3.Selection<BaseType, {}, HTMLElement, any>
   line: d3.Line<[number, number]>
   wrap_pi: boolean = false
@@ -17,17 +18,17 @@ export class Graph {
   constructor(element: string, width: number, height: number) {
     this.width = width - this.margin.left - this.margin.right
     this.height = height - this.margin.top - this.margin.bottom
-    this.x = d3.scaleLinear().range([0, this.width])
-    this.y = d3.scaleLinear().range([this.height, 0])
+    this.x = scaleLinear().range([0, this.width])
+    this.y = scaleLinear().range([this.height, 0])
 
-    this.xAxis = d3.axisBottom(this.x) // d3.svg.axis().scale(this.x).orient('bottom')
-    this.yAxis = d3.axisLeft(this.y) // svg.axis().scale(this.y).orient('left')
-    this.svg = d3.select(element).append('svg')
+    this.xAxis = <d3.Axis<number>>axisBottom(this.x) // d3.svg.axis().scale(this.x).orient('bottom')
+    this.yAxis = <d3.Axis<number>>axisLeft(this.y) // svg.axis().scale(this.y).orient('left')
+    this.svg = select(element).append('svg')
       .attr('width', width)
       .attr('height', height)
       .append('g')
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
-    this.line = d3.line()
+    this.line = line()
       .x(d => this.x(d[0]))
       .y(d => this.y(this.wrap_pi ? Graph.wrap_pi(d[1]) : d[1]))
   }
