@@ -1,6 +1,7 @@
 /**
- * Created by colin on 6/14/16.
- */
+  * Created by colin on 6/14/16.
+  * http://littleredcomputer.github.io
+  */
 
 import {Solver, Derivative} from 'odex/src/odex'
 
@@ -8,7 +9,7 @@ interface HamiltonMap {
   generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void): void
 }
 
-interface DE {
+interface DifferentialEquation {
   evolve(initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void
 }
 
@@ -46,7 +47,7 @@ export class StandardMap implements HamiltonMap {
   }
 }
 
-export class DrivenPendulumMap implements HamiltonMap, DE {
+export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
 
   paramfn: () => {a: number, omega: number}
   S: Solver
@@ -54,7 +55,7 @@ export class DrivenPendulumMap implements HamiltonMap, DE {
 
   HamiltonSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
     return (x, [t, theta, p_theta]) => {
-      let _1 = Math.sin(omega * t)
+      // let _1 = Math.sin(omega * t)
       let _2 = Math.pow(l, 2)
       let _3 = omega * t
       let _4 = Math.sin(theta)
@@ -65,7 +66,7 @@ export class DrivenPendulumMap implements HamiltonMap, DE {
     }
   }
 
-  LagrangeSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
+  LagrangeSysder(l: number, omega: number, a: number, g: number): Derivative {
     return (x, [t, theta, thetadot]) => {
       let _1 = Math.sin(theta)
       return [1, thetadot, (_1 * Math.cos(omega * t) * a * Math.pow(omega, 2) - _1 * g) / l]
@@ -82,17 +83,16 @@ export class DrivenPendulumMap implements HamiltonMap, DE {
 
   generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void) {
     let params = this.paramfn()
-    console.log('params', params)
     let period = 2 * Math.PI / params.omega
     let t1 = 1000 * period
     let H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8)
-    this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(period, (t: number, ys: number[]) => callback(this.PV(ys[1]), ys[2])))
+    this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(period, (t, ys) => callback(this.PV(ys[1]), ys[2])))
   }
 
   evolve(initialData: number[], t1: number, dt: number, callback: (x: number, ys: number[]) => void) {
     let params = this.paramfn()
     console.log('params', params)
-    let L = this.LagrangeSysder(1, 1, params.omega, params.a, 9.8)
+    let L = this.LagrangeSysder(1, params.omega, params.a, 9.8)
     let p0 = performance.now()
     this.S.solve(L, 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
     console.log('evolution took', (performance.now() - p0).toFixed(2), 'msec')
@@ -188,7 +188,7 @@ export class DrivenPendulumAnimation {
       let t = <HTMLInputElement>e.target
       document.getElementById(o.tValueId).textContent = t.value
     })
-    document.getElementById(o.goButtonId).addEventListener('click', (e: MouseEvent) => {
+    document.getElementById(o.goButtonId).addEventListener('click', () => {
       // (re)solve the differential equation and update the data. Kick off the animation.
       let dt = 1 / 60
       let t1 = +tRange.value
