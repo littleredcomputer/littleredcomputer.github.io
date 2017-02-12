@@ -17,7 +17,7 @@ using: katex
 <button id="go">go</button>
 
 
-<script src="/public/js/standard-map.bundle.min.js"></script>
+<script src="/public/js/sicm.bundle.min.js"></script>
 <script>
 var A = new s.DrivenPendulumAnimation({
   omegaValueId: 'wValue',

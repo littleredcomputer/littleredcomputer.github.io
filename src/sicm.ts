@@ -10,7 +10,7 @@ interface HamiltonMap {
 }
 
 interface DifferentialEquation {
-  evolve(initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void
+  evolve(params: {}, initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void
 }
 
 const twoPi = Math.PI * 2
@@ -89,9 +89,7 @@ export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
     this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(period, (t, ys) => callback(this.PV(ys[1]), ys[2])))
   }
 
-  evolve(initialData: number[], t1: number, dt: number, callback: (x: number, ys: number[]) => void) {
-    let params = this.paramfn()
-    console.log('params', params)
+  evolve(params: {omega: number, a: number}, initialData: number[], t1: number, dt: number, callback: (x: number, ys: number[]) => void) {
     let L = this.LagrangeSysder(1, params.omega, params.a, 9.8)
     let p0 = performance.now()
     this.S.solve(L, 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
@@ -163,10 +161,7 @@ export class DrivenPendulumAnimation {
   }) {
     let omegaRange = <HTMLInputElement>document.getElementById(o.omegaRangeId)
     let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
-    let diffEq = new DrivenPendulumMap(() => ({
-      a: this.amplitude,
-      omega: +omegaRange.value
-    }))
+    let diffEq = new DrivenPendulumMap(() => ({omega: +omegaRange.value, a: this.amplitude}))
     let anim = <HTMLCanvasElement>document.getElementById(o.animId)
     this.ctx = anim.getContext('2d')
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
@@ -197,7 +192,7 @@ export class DrivenPendulumAnimation {
       let i = 0
       this.omega = +omegaRange.value
       let p0 = performance.now()
-      diffEq.evolve(this.initialData, t1, dt, (x, ys) => {this.data[i++] = ys})
+      diffEq.evolve({omega: this.omega, a: this.amplitude}, this.initialData, t1, dt, (x, ys) => {this.data[i++] = ys})
       console.log('DE evolution in', (performance.now() - p0).toFixed(1), 'msec')
       this.frameIndex = 0
       this.frameStart = performance.now()
@@ -246,8 +241,6 @@ interface DoubleParams {
 }
 
 class DoublePendulumMap implements DifferentialEquation {
-  paramfn: () => DoubleParams
-  params: DoubleParams
   S: Solver
 
   LagrangeSysder(l1: number, m1: number, l2: number, m2: number): Derivative {
@@ -270,19 +263,14 @@ class DoublePendulumMap implements DifferentialEquation {
     }
   }
 
-  constructor(paramfn: () => {l1: number, m1: number, l2: number, m2: number}) {
-    this.paramfn = paramfn
-    this.S = new Solver(5)
+  constructor() {
+    this.S = new Solver(5)  // t, theta, phi, thetadot, phidot
     this.S.denseOutput = true
     this.S.absoluteTolerance = 1e-8
   }
 
-  evolve(initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void {
-    let p = this.paramfn()
-    console.log('params', this.params)
-    let L = this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2)
-    this.params = p
-    this.S.solve(L, 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
+  evolve(p: DoubleParams, initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void {
+    this.S.solve(this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2), 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
   }
 }
 
@@ -320,8 +308,7 @@ export class DoublePendulumAnimation {
     this.ctx = anim.getContext('2d')
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
     this.ctx.translate(this.animLogicalSize, -this.animLogicalSize)
-    let paramfn = () => ({l1: 0.5, m1: 0.5, l2: 0.5, m2: 0.5})
-    let diffEq = new DoublePendulumMap(paramfn)
+    let diffEq = new DoublePendulumMap()
     document.getElementById(o.goButtonId).addEventListener('click', () =>  {
       let dt = 1 / 60
       let t1 = +tRange.value
@@ -329,8 +316,8 @@ export class DoublePendulumAnimation {
       this.data = new Array(n)
       let i = 0
       let p0 = performance.now()
-      this.params = paramfn()
-      diffEq.evolve([deg2rad(+theta0Range.value), deg2rad(+phi0Range.value), 0, 0], t1, dt, (x, ys) => {this.data[i++] = ys})
+      this.params = {l1: 0.5, m1: 0.5, l2: 0.5, m2: 0.5}
+      diffEq.evolve(this.params, [deg2rad(+theta0Range.value), deg2rad(+phi0Range.value), 0, 0], t1, dt, (x, ys) => {this.data[i++] = ys})
       console.log('evolution in', (performance.now() - p0).toFixed(2), 'msec')
       this.frameIndex = 0
       if (!this.animating) {

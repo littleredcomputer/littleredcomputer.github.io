@@ -23,7 +23,7 @@ using: katex
 <div>
   <span class="equation" data-expr="l_1:"></span>
   <input type="range" id="lRange" min="0.2" max="0.8" value="0.5" step="0.1"/>
-  <span id="lValue"></span>; <span class="equation" data-expr="l_1+l_1=0"></span>
+  <span id="lValue"></span>; <span class="equation" data-expr="l_1+l_2=0"></span>
 </div>
 <div>
   <span class="equation" data-expr="t_1:"></span>
@@ -36,7 +36,7 @@ using: katex
 <button id="go">go</button>
 
 
-<script src="/public/js/standard-map.bundle.min.js"></script>
+<script src="/public/js/sicm.bundle.min.js"></script>
 <script>
 var A = new s.DoublePendulumAnimation({
   theta0RangeId: 'theta0Range',

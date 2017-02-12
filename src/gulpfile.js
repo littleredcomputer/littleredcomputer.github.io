@@ -27,18 +27,18 @@ gulp.task('odex-bundle', function () {
   return bundle_ts('odex-demo', 'odexdemo')
 })
 
-gulp.task('standard-bundle', function () {
-  return bundle_ts('standard-map', 's')
+gulp.task('sicm-bundle', function () {
+  return bundle_ts('sicm', 's')
 })
 
 gulp.task('watch', function () {
   watch('odex-demo.ts', function () {
     gulp.start('odex-bundle')
   })
-  watch('standard-map.ts', function () {
-    gulp.start('standard-bundle')
+  watch('sicm.ts', function () {
+    gulp.start('sicm-bundle')
   })
 })
 
-gulp.task('default', ['odex-bundle', 'standard-bundle'])
+gulp.task('default', ['odex-bundle', 'sicm-bundle'])
 
