@@ -45,6 +45,10 @@ var A = new s.DoublePendulumAnimation({
   phi0ValueId: 'phi0Value',
   tRangeId: 'tRange',
   tValueId: 'tValue',
+  mRangeId: 'mRange',
+  mValueId: 'mValue',
+  lRangeId: 'lRange',
+  lValueId: 'lValue',
   animId: 'a',
   goButtonId: 'go'
 })

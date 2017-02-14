@@ -246,20 +246,16 @@ class DoublePendulumMap implements DifferentialEquation {
   LagrangeSysder(l1: number, m1: number, l2: number, m2: number): Derivative {
     const g = 9.8
     return (x, [t, theta, phi, thetadot, phidot]) => {
-      // let _1 = Math.cos(- phi + theta)
-      let _2 = Math.pow(phidot, 2)
-      let _3 = Math.sin(phi)
-      // let _4 = Math.sin(- phi + theta)
-      let _5 = - phi
-      // let _6 = Math.pow(Math.sin(- phi + theta), 2)
-      let _7 = Math.sin(theta)
-      let _8 = Math.pow(thetadot, 2)
-      // let _9 = - phi + theta
-      return [1,
-        thetadot,
-        phidot,
-        (- Math.sin(_5 + theta) * Math.cos(_5 + theta) * l1 * m2 * _8 - Math.sin(_5 + theta) * l2 * m2 * _2 + Math.cos(_5 + theta) * _3 * g * m2 - _7 * g * m1 - _7 * g * m2) / (Math.pow(Math.sin(_5 + theta), 2) * l1 * m2 + l1 * m1),
-        (Math.sin(_5 + theta) * Math.cos(_5 + theta) * l2 * m2 * _2 + Math.sin(_5 + theta) * l1 * m1 * _8 + Math.sin(_5 + theta) * l1 * m2 * _8 + _7 * Math.cos(_5 + theta) * g * m1 + _7 * Math.cos(_5 + theta) * g * m2 - _3 * g * m1 - _3 * g * m2) / (Math.pow(Math.sin(_5 + theta), 2) * l2 * m2 + l2 * m1)]
+      let _0002 = Math.pow(phidot, 2)
+      let _0003 = Math.sin(phi)
+      let _0005 = - phi
+      let _0007 = Math.sin(theta)
+      let _0008 = Math.pow(thetadot, 2)
+      let _000b = _0005 + theta
+      let _000e = Math.cos(_000b)
+      let _000f = Math.sin(_000b)
+      let _0011 = Math.pow(_000f, 2)
+      return [1, thetadot, phidot, (- _000f * _000e * l1 * m2 * _0008 - _000f * l2 * m2 * _0002 + _000e * _0003 * g * m2 - _0007 * g * m1 - _0007 * g * m2) / (_0011 * l1 * m2 + l1 * m1), (_000f * _000e * l2 * m2 * _0002 + _000f * l1 * m1 * _0008 + _000f * l1 * m2 * _0008 + _0007 * _000e * g * m1 + _0007 * _000e * g * m2 - _0003 * g * m1 - _0003 * g * m2) / (_0011 * l2 * m2 + l2 * m1)]
     }
   }
 
@@ -293,6 +289,10 @@ export class DoublePendulumAnimation {
     phi0ValueId: string,
     tRangeId: string,
     tValueId: string,
+    mRangeId: string,
+    mValueId: string,
+    lRangeId: string,
+    lValueId: string,
     animId: string,
     goButtonId: string
   }) {
@@ -304,6 +304,10 @@ export class DoublePendulumAnimation {
     phi0Range.addEventListener('change', this.valueUpdater(o.phi0ValueId))
     let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
     tRange.addEventListener('change', this.valueUpdater(o.tValueId))
+    let mRange = <HTMLInputElement>document.getElementById(o.mRangeId)
+    mRange.addEventListener('change', this.valueUpdater(o.mValueId))
+    let lRange = <HTMLInputElement>document.getElementById(o.lRangeId)
+    lRange.addEventListener('change', this.valueUpdater(o.lValueId))
     let anim = <HTMLCanvasElement>document.getElementById(o.animId)
     this.ctx = anim.getContext('2d')
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
@@ -316,10 +320,16 @@ export class DoublePendulumAnimation {
       this.data = new Array(n)
       let i = 0
       let p0 = performance.now()
-      this.params = {l1: 0.5, m1: 0.5, l2: 0.5, m2: 0.5}
+      this.params = {
+        l1: +lRange.value,
+        m1: +mRange.value,
+        l2: 1 - Number(lRange.value),
+        m2: 1 - Number(mRange.value)
+      }
       diffEq.evolve(this.params, [deg2rad(+theta0Range.value), deg2rad(+phi0Range.value), 0, 0], t1, dt, (x, ys) => {this.data[i++] = ys})
       console.log('evolution in', (performance.now() - p0).toFixed(2), 'msec')
       this.frameIndex = 0
+      this.frameStart = performance.now()
       if (!this.animating) {
         this.animating = true
         requestAnimationFrame(this.frame)
@@ -329,7 +339,6 @@ export class DoublePendulumAnimation {
   frame = () => {
     this.ctx.clearRect(-this.animLogicalSize, -this.animLogicalSize, 2 * this.animLogicalSize, 2 * this.animLogicalSize)
     let d = this.data[this.frameIndex]
-    console.log('frameIndex', this.frameIndex, 'd', this.data[this.frameIndex])
     let theta = d[1], phi = d[2]
     const c = this.ctx
     const p = this.params
@@ -348,9 +357,10 @@ export class DoublePendulumAnimation {
     c.moveTo(x0, y0)
     c.arc(x0, y0, 0.05, 0, Math.PI * 2)
     c.moveTo(x1, y1)
-    c.arc(x1, y1, 0.1, 0, Math.PI * 2)
+    // TODO: mass should be proportional to volume, to make the diagram more realistic
+    c.arc(x1, y1, p.m1 / 5, 0, Math.PI * 2)
     c.moveTo(x2, y2)
-    c.arc(x2, y2, 0.1, 0, Math.PI * 2)
+    c.arc(x2, y2, p.m2 / 5, 0, Math.PI * 2)
     c.fill()
 
     ++this.frameIndex
