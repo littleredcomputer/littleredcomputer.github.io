@@ -54,15 +54,16 @@ export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
   PV: (x: number) => number
 
   HamiltonSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
+
     return (x, [t, theta, p_theta]) => {
-      // let _1 = Math.sin(omega * t)
-      let _2 = Math.pow(l, 2)
-      let _3 = omega * t
-      let _4 = Math.sin(theta)
-      let _5 = Math.cos(theta)
+      let _0002 = Math.pow(l, 2)
+      let _0003 = omega * t
+      let _0004 = Math.sin(theta)
+      let _0005 = Math.cos(theta)
+      let _0006 = Math.sin(_0003)
       return [1,
-        (Math.sin(_3) * _4 * a * l * m * omega + p_theta) / (_2 * m),
-        (- Math.pow(Math.sin(_3), 2) * _5 * _4 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - Math.sin(_3) * _5 * a * omega * p_theta - _4 * g * _2 * m) / l]
+        (_0006 * _0004 * a * l * m * omega + p_theta) / (_0002 * m),
+        (- Math.pow(_0006, 2) * _0005 * _0004 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - _0006 * _0005 * a * omega * p_theta - _0004 * g * _0002 * m) / l]
     }
   }
 
@@ -124,7 +125,6 @@ export class ExploreMap {
 
   // since pt is invoked in callback position, we want to define it as an instance arrow function
   pt = (x: number, y: number) => {
-    // if (this.i % 100 === 0) console.log(this.i, 'pts')
     this.context.beginPath()
     this.context.arc(x, y, 0.01, 0, 2 * Math.PI)
     this.context.fill()
@@ -327,7 +327,7 @@ export class DoublePendulumAnimation {
         m2: 1 - Number(mRange.value)
       }
       diffEq.evolve(this.params, [deg2rad(+theta0Range.value), deg2rad(+phi0Range.value), 0, 0], t1, dt, (x, ys) => {this.data[i++] = ys})
-      console.log('evolution in', (performance.now() - p0).toFixed(2), 'msec')
+      console.log('evolution in', (performance.now() - p0).toFixed(2), 'msec ')
       this.frameIndex = 0
       this.frameStart = performance.now()
       if (!this.animating) {
@@ -357,10 +357,9 @@ export class DoublePendulumAnimation {
     c.moveTo(x0, y0)
     c.arc(x0, y0, 0.05, 0, Math.PI * 2)
     c.moveTo(x1, y1)
-    // TODO: mass should be proportional to volume, to make the diagram more realistic
-    c.arc(x1, y1, p.m1 / 5, 0, Math.PI * 2)
+    c.arc(x1, y1, Math.pow(p.m1, 1 / 3) / 7, 0, Math.PI * 2)
     c.moveTo(x2, y2)
-    c.arc(x2, y2, p.m2 / 5, 0, Math.PI * 2)
+    c.arc(x2, y2, Math.pow(p.m2, 1 / 3) / 7, 0, Math.PI * 2)
     c.fill()
 
     ++this.frameIndex

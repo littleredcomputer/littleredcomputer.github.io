@@ -20,7 +20,7 @@ g.axis {
 .line {
   fill: none;
   stroke: steelblue;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
 }
 
 .line.Ai {

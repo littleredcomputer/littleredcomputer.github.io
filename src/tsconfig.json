@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "outDir": "../public/js",
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
