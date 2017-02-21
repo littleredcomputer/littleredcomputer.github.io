@@ -45,16 +45,14 @@ var DrivenPendulumMap = (function () {
             var _0004 = Math.sin(theta);
             var _0005 = Math.cos(theta);
             var _0006 = Math.sin(_0003);
-            return [1,
-                (_0006 * _0004 * a * l * m * omega + p_theta) / (_0002 * m),
-                (-Math.pow(_0006, 2) * _0005 * _0004 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - _0006 * _0005 * a * omega * p_theta - _0004 * g * _0002 * m) / l];
+            return [1, (a * l * m * omega * _0006 * _0004 + p_theta) / (_0002 * m), (-Math.pow(a, 2) * l * m * Math.pow(omega, 2) * Math.pow(_0006, 2) * _0005 * _0004 - a * omega * p_theta * _0006 * _0005 - g * _0002 * m * _0004) / l];
         };
     };
     DrivenPendulumMap.prototype.LagrangeSysder = function (l, omega, a, g) {
         return function (x, _a) {
             var t = _a[0], theta = _a[1], thetadot = _a[2];
-            var _1 = Math.sin(theta);
-            return [1, thetadot, (_1 * Math.cos(omega * t) * a * Math.pow(omega, 2) - _1 * g) / l];
+            var _0001 = Math.sin(theta);
+            return [1, thetadot, (a * Math.pow(omega, 2) * _0001 * Math.cos(omega * t) - g * _0001) / l];
         };
     };
     DrivenPendulumMap.prototype.generateSection = function (initialData, n, callback) {
@@ -112,6 +110,13 @@ var DrivenPendulumAnimation = (function () {
         var _this = this;
         this.amplitude = 0.1;
         this.animLogicalSize = 1.3;
+        this.timestring = function (t) {
+            var s = t.toFixed(2);
+            if (s.match(/\.[0-9]$/)) {
+                s += '0';
+            }
+            return 't: ' + s + ' s';
+        };
         this.frame = function () {
             var bob = function (t) { return _this.amplitude * Math.cos(_this.omega * t); };
             _this.ctx.clearRect(-_this.animLogicalSize, -_this.animLogicalSize, 2 * _this.animLogicalSize, 2 * _this.animLogicalSize);
@@ -131,6 +136,12 @@ var DrivenPendulumAnimation = (function () {
             c.moveTo(0, y0);
             c.lineTo(Math.sin(theta), y0 - Math.cos(theta));
             c.stroke();
+            c.save();
+            c.scale(0.01, -0.01);
+            c.font = '10pt Futura';
+            c.fillStyle = '#888';
+            c.fillText(_this.timestring(d[0]), -115, 115);
+            c.restore();
             ++_this.frameIndex;
             if (_this.frameIndex < _this.data.length) {
                 window.requestAnimationFrame(_this.frame);
@@ -142,8 +153,9 @@ var DrivenPendulumAnimation = (function () {
             }
         };
         var omegaRange = document.getElementById(o.omegaRangeId);
+        var omegaRadSec = function () { return +omegaRange.value * 2 * Math.PI; };
         var tRange = document.getElementById(o.tRangeId);
-        var diffEq = new DrivenPendulumMap(function () { return ({ omega: +omegaRange.value, a: _this.amplitude }); });
+        var diffEq = new DrivenPendulumMap(function () { return ({ omega: omegaRadSec(), a: _this.amplitude }); });
         var anim = document.getElementById(o.animId);
         this.ctx = anim.getContext('2d');
         this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize));
@@ -161,17 +173,19 @@ var DrivenPendulumAnimation = (function () {
             var t = e.target;
             document.getElementById(o.omegaValueId).textContent = (+t.value).toFixed(1);
         });
+        document.getElementById(o.omegaValueId).textContent = omegaRange.value;
         tRange.addEventListener('change', function (e) {
             var t = e.target;
             document.getElementById(o.tValueId).textContent = t.value;
         });
+        document.getElementById(o.tValueId).textContent = tRange.value;
         document.getElementById(o.goButtonId).addEventListener('click', function () {
             var dt = 1 / 60;
             var t1 = +tRange.value;
             var n = Math.ceil(t1 / dt);
             _this.data = new Array(n);
             var i = 0;
-            _this.omega = +omegaRange.value;
+            _this.omega = omegaRadSec();
             var p0 = performance.now();
             diffEq.evolve({ omega: _this.omega, a: _this.amplitude }, _this.initialData, t1, dt, function (x, ys) { _this.data[i++] = ys; });
             console.log('DE evolution in', (performance.now() - p0).toFixed(1), 'msec');
@@ -205,7 +219,7 @@ var DoublePendulumMap = (function () {
             var _000e = Math.cos(_000b);
             var _000f = Math.sin(_000b);
             var _0011 = Math.pow(_000f, 2);
-            return [1, thetadot, phidot, (-_000f * _000e * l1 * m2 * _0008 - _000f * l2 * m2 * _0002 + _000e * _0003 * g * m2 - _0007 * g * m1 - _0007 * g * m2) / (_0011 * l1 * m2 + l1 * m1), (_000f * _000e * l2 * m2 * _0002 + _000f * l1 * m1 * _0008 + _000f * l1 * m2 * _0008 + _0007 * _000e * g * m1 + _0007 * _000e * g * m2 - _0003 * g * m1 - _0003 * g * m2) / (_0011 * l2 * m2 + l2 * m1)];
+            return [1, thetadot, phidot, (-l1 * m2 * _0008 * _000f * _000e - l2 * m2 * _0002 * _000f + g * m2 * _000e * _0003 - g * m1 * _0007 - g * m2 * _0007) / (l1 * m2 * _0011 + l1 * m1), (l2 * m2 * _0002 * _000f * _000e + l1 * m1 * _0008 * _000f + l1 * m2 * _0008 * _000f + g * m1 * _0007 * _000e + g * m2 * _0007 * _000e - g * m1 * _0003 - g * m2 * _0003) / (l2 * m2 * _0011 + l2 * m1)];
         };
     };
     DoublePendulumMap.prototype.evolve = function (p, initialData, t1, dt, callback) {

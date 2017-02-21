@@ -5,10 +5,10 @@ categories: math js
 using: katex
 ---
 
-<div>&omega;: <input type="range" id="wRange" min="0" max="60" value="6.2" style="width:200px" step="0.2"/>
-  <span id="wValue"></span>
+<div>&omega;: <input type="range" id="wRange" min="0" max="10" value="1.0" style="width:200px" step="0.1"/>
+  <span id="wValue"></span>Hz
   &nbsp;&nbsp;t<sub>1</sub>: <input type="range" id="tRange" min="10" max="60" value="10" step="5"/>
-  <span id="tValue"></span>
+  <span id="tValue"></span>s
 </div>
 <canvas id="p" width="320" height="320" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <canvas id="a" width="320" height="320" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>

@@ -54,23 +54,20 @@ export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
   PV: (x: number) => number
 
   HamiltonSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
-
     return (x, [t, theta, p_theta]) => {
-      let _0002 = Math.pow(l, 2)
-      let _0003 = omega * t
-      let _0004 = Math.sin(theta)
-      let _0005 = Math.cos(theta)
-      let _0006 = Math.sin(_0003)
-      return [1,
-        (_0006 * _0004 * a * l * m * omega + p_theta) / (_0002 * m),
-        (- Math.pow(_0006, 2) * _0005 * _0004 * Math.pow(a, 2) * l * m * Math.pow(omega, 2) - _0006 * _0005 * a * omega * p_theta - _0004 * g * _0002 * m) / l]
+       let _0002 = Math.pow(l, 2)
+       let _0003 = omega * t
+       let _0004 = Math.sin(theta)
+       let _0005 = Math.cos(theta)
+       let _0006 = Math.sin(_0003)
+       return [1, (a * l * m * omega * _0006 * _0004 + p_theta) / (_0002 * m), (- Math.pow(a, 2) * l * m * Math.pow(omega, 2) * Math.pow(_0006, 2) * _0005 * _0004 - a * omega * p_theta * _0006 * _0005 - g * _0002 * m * _0004) / l]
     }
   }
 
   LagrangeSysder(l: number, omega: number, a: number, g: number): Derivative {
     return (x, [t, theta, thetadot]) => {
-      let _1 = Math.sin(theta)
-      return [1, thetadot, (_1 * Math.cos(omega * t) * a * Math.pow(omega, 2) - _1 * g) / l]
+      let _0001 = Math.sin(theta)
+      return [1, thetadot, (a * Math.pow(omega, 2) * _0001 * Math.cos(omega * t) - g * _0001) / l]
     }
   }
 
@@ -160,8 +157,9 @@ export class DrivenPendulumAnimation {
     goButtonId: string
   }) {
     let omegaRange = <HTMLInputElement>document.getElementById(o.omegaRangeId)
+    let omegaRadSec = () => +omegaRange.value * 2 * Math.PI
     let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
-    let diffEq = new DrivenPendulumMap(() => ({omega: +omegaRange.value, a: this.amplitude}))
+    let diffEq = new DrivenPendulumMap(() => ({omega: omegaRadSec(), a: this.amplitude}))
     let anim = <HTMLCanvasElement>document.getElementById(o.animId)
     this.ctx = anim.getContext('2d')
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
@@ -179,10 +177,12 @@ export class DrivenPendulumAnimation {
       let t = <HTMLInputElement>e.target
       document.getElementById(o.omegaValueId).textContent = (+t.value).toFixed(1)
     })
+    document.getElementById(o.omegaValueId).textContent = omegaRange.value
     tRange.addEventListener('change', (e: Event) => {
       let t = <HTMLInputElement>e.target
       document.getElementById(o.tValueId).textContent = t.value
     })
+    document.getElementById(o.tValueId).textContent = tRange.value
     document.getElementById(o.goButtonId).addEventListener('click', () => {
       // (re)solve the differential equation and update the data. Kick off the animation.
       let dt = 1 / 60
@@ -190,7 +190,7 @@ export class DrivenPendulumAnimation {
       let n = Math.ceil(t1 / dt)
       this.data = new Array(n)
       let i = 0
-      this.omega = +omegaRange.value
+      this.omega = omegaRadSec()
       let p0 = performance.now()
       diffEq.evolve({omega: this.omega, a: this.amplitude}, this.initialData, t1, dt, (x, ys) => {this.data[i++] = ys})
       console.log('DE evolution in', (performance.now() - p0).toFixed(1), 'msec')
@@ -202,6 +202,14 @@ export class DrivenPendulumAnimation {
       }
     })
   }
+  timestring = (t: number) => {
+    let s = t.toFixed(2)
+    if (s.match(/\.[0-9]$/)) {
+      s += '0'
+    }
+    return 't: ' + s + ' s'
+  }
+
   frame = () => {
     let bob = (t: number) => this.amplitude * Math.cos(this.omega * t)
     this.ctx.clearRect(-this.animLogicalSize, -this.animLogicalSize, 2 * this.animLogicalSize, 2 * this.animLogicalSize)
@@ -221,6 +229,12 @@ export class DrivenPendulumAnimation {
     c.moveTo(0, y0)
     c.lineTo(Math.sin(theta), y0 - Math.cos(theta))
     c.stroke()
+    c.save()
+    c.scale(0.01, -0.01)
+    c.font = '10pt Futura'
+    c.fillStyle = '#888'
+    c.fillText(this.timestring(d[0]), -115, 115)
+    c.restore()
 
     ++this.frameIndex
     if (this.frameIndex < this.data.length) {
@@ -255,7 +269,7 @@ class DoublePendulumMap implements DifferentialEquation {
       let _000e = Math.cos(_000b)
       let _000f = Math.sin(_000b)
       let _0011 = Math.pow(_000f, 2)
-      return [1, thetadot, phidot, (- _000f * _000e * l1 * m2 * _0008 - _000f * l2 * m2 * _0002 + _000e * _0003 * g * m2 - _0007 * g * m1 - _0007 * g * m2) / (_0011 * l1 * m2 + l1 * m1), (_000f * _000e * l2 * m2 * _0002 + _000f * l1 * m1 * _0008 + _000f * l1 * m2 * _0008 + _0007 * _000e * g * m1 + _0007 * _000e * g * m2 - _0003 * g * m1 - _0003 * g * m2) / (_0011 * l2 * m2 + l2 * m1)]
+      return [1, thetadot, phidot, (- l1 * m2 * _0008 * _000f * _000e - l2 * m2 * _0002 * _000f + g * m2 * _000e * _0003 - g * m1 * _0007 - g * m2 * _0007) / (l1 * m2 * _0011 + l1 * m1), (l2 * m2 * _0002 * _000f * _000e + l1 * m1 * _0008 * _000f + l1 * m2 * _0008 * _000f + g * m1 * _0007 * _000e + g * m2 * _0007 * _000e - g * m1 * _0003 - g * m2 * _0003) / (l2 * m2 * _0011 + l2 * m1)]
     }
   }
 
