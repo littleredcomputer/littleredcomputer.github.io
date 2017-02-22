@@ -165,11 +165,13 @@ export class DrivenPendulumAnimation {
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
     this.ctx.translate(this.animLogicalSize, -this.animLogicalSize)
     let xMap = new ExploreMap('p', diffEq, [-Math.PI, Math.PI], [-10, 10])
+    let goButton = document.getElementById(o.goButtonId)
     xMap.onExplore = (theta0: number, thetaDot0: number) => {
       console.log('onExplore', theta0, thetaDot0)
       document.getElementById(o.theta0Id).textContent = theta0.toFixed(3)
       document.getElementById(o.thetaDot0Id).textContent = thetaDot0.toFixed(3)
       this.initialData = [theta0, thetaDot0]
+      goButton.removeAttribute('disabled')
     }
     let explore = <HTMLCanvasElement>document.getElementById(o.exploreId)
     omegaRange.addEventListener('change', (e: Event) => {
@@ -183,7 +185,8 @@ export class DrivenPendulumAnimation {
       document.getElementById(o.tValueId).textContent = t.value
     })
     document.getElementById(o.tValueId).textContent = tRange.value
-    document.getElementById(o.goButtonId).addEventListener('click', () => {
+    goButton.setAttribute('disabled', 'disabled')
+    goButton.addEventListener('click', () => {
       // (re)solve the differential equation and update the data. Kick off the animation.
       let dt = 1 / 60
       let t1 = +tRange.value
@@ -218,17 +221,17 @@ export class DrivenPendulumAnimation {
     let theta = d[1]
     const c = this.ctx
     c.lineWidth = 0.02
+    c.fillStyle = '#000'
+    c.beginPath()
+    c.moveTo(0, y0)
+    c.lineTo(Math.sin(theta), y0 - Math.cos(theta))
+    c.stroke()
     c.beginPath()
     c.fillStyle = '#000'
     c.arc(0, y0, 0.05, 0, Math.PI * 2)
     c.fillStyle = '#f00'
     c.arc(Math.sin(theta), y0 - Math.cos(theta), 0.1, 0, Math.PI * 2)
     c.fill()
-    c.fillStyle = '#000'
-    c.beginPath()
-    c.moveTo(0, y0)
-    c.lineTo(Math.sin(theta), y0 - Math.cos(theta))
-    c.stroke()
     c.save()
     c.scale(0.01, -0.01)
     c.font = '10pt Futura'

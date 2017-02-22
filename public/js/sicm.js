@@ -125,17 +125,17 @@ var DrivenPendulumAnimation = (function () {
             var theta = d[1];
             var c = _this.ctx;
             c.lineWidth = 0.02;
+            c.fillStyle = '#000';
+            c.beginPath();
+            c.moveTo(0, y0);
+            c.lineTo(Math.sin(theta), y0 - Math.cos(theta));
+            c.stroke();
             c.beginPath();
             c.fillStyle = '#000';
             c.arc(0, y0, 0.05, 0, Math.PI * 2);
             c.fillStyle = '#f00';
             c.arc(Math.sin(theta), y0 - Math.cos(theta), 0.1, 0, Math.PI * 2);
             c.fill();
-            c.fillStyle = '#000';
-            c.beginPath();
-            c.moveTo(0, y0);
-            c.lineTo(Math.sin(theta), y0 - Math.cos(theta));
-            c.stroke();
             c.save();
             c.scale(0.01, -0.01);
             c.font = '10pt Futura';
@@ -161,11 +161,13 @@ var DrivenPendulumAnimation = (function () {
         this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize));
         this.ctx.translate(this.animLogicalSize, -this.animLogicalSize);
         var xMap = new ExploreMap('p', diffEq, [-Math.PI, Math.PI], [-10, 10]);
+        var goButton = document.getElementById(o.goButtonId);
         xMap.onExplore = function (theta0, thetaDot0) {
             console.log('onExplore', theta0, thetaDot0);
             document.getElementById(o.theta0Id).textContent = theta0.toFixed(3);
             document.getElementById(o.thetaDot0Id).textContent = thetaDot0.toFixed(3);
             _this.initialData = [theta0, thetaDot0];
+            goButton.removeAttribute('disabled');
         };
         var explore = document.getElementById(o.exploreId);
         omegaRange.addEventListener('change', function (e) {
@@ -179,7 +181,8 @@ var DrivenPendulumAnimation = (function () {
             document.getElementById(o.tValueId).textContent = t.value;
         });
         document.getElementById(o.tValueId).textContent = tRange.value;
-        document.getElementById(o.goButtonId).addEventListener('click', function () {
+        goButton.setAttribute('disabled', 'disabled');
+        goButton.addEventListener('click', function () {
             var dt = 1 / 60;
             var t1 = +tRange.value;
             var n = Math.ceil(t1 / dt);
