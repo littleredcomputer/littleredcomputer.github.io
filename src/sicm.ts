@@ -234,8 +234,8 @@ export class DrivenPendulumAnimation {
     c.fill()
     c.save()
     c.scale(0.01, -0.01)
-    c.font = '10pt Futura'
-    c.fillStyle = '#888'
+    c.font = '10pt sans-serif3'
+    c.fillStyle = '#bbb'
     c.fillText(this.timestring(d[0]), -115, 115)
     c.restore()
 
