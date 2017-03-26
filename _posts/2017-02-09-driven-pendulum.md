@@ -5,8 +5,8 @@ categories: math js
 using: katex
 ---
 
-<div>&omega;: <input type="range" id="wRange" min="0" max="10" value="1.0" style="width:200px" step="0.1"/>
-  <span id="wValue"></span>Hz
+<div>f: <input type="range" id="fRange" min="0" max="10" value="1.0" style="width:200px" step="0.1"/>
+  <span id="fValue"></span>Hz
   &nbsp;&nbsp;t<sub>1</sub>: <input type="range" id="tRange" min="10" max="60" value="10" step="5"/>
   <span id="tValue"></span>s
 </div>
@@ -20,8 +20,8 @@ using: katex
 <script src="/public/js/sicm.bundle.min.js"></script>
 <script>
 var A = new s.DrivenPendulumAnimation({
-  omegaValueId: 'wValue',
-  omegaRangeId: 'wRange',
+  fValueId: 'fValue',
+  fRangeId: 'fRange',
   tValueId: 'tValue',
   tRangeId: 'tRange',
   animId: 'a',

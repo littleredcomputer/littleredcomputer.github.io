@@ -146,8 +146,8 @@ export class DrivenPendulumAnimation {
   animating: boolean
 
   constructor(o: {
-    omegaValueId: string
-    omegaRangeId: string
+    fValueId: string
+    fRangeId: string
     tValueId: string
     tRangeId: string
     animId: string
@@ -156,8 +156,8 @@ export class DrivenPendulumAnimation {
     thetaDot0Id: string
     goButtonId: string
   }) {
-    let omegaRange = <HTMLInputElement>document.getElementById(o.omegaRangeId)
-    let omegaRadSec = () => +omegaRange.value * 2 * Math.PI
+    let fRange = <HTMLInputElement>document.getElementById(o.fRangeId)
+    let omegaRadSec = () => +fRange.value * 2 * Math.PI
     let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
     let diffEq = new DrivenPendulumMap(() => ({omega: omegaRadSec(), a: this.amplitude}))
     let anim = <HTMLCanvasElement>document.getElementById(o.animId)
@@ -174,12 +174,12 @@ export class DrivenPendulumAnimation {
       goButton.removeAttribute('disabled')
     }
     let explore = <HTMLCanvasElement>document.getElementById(o.exploreId)
-    omegaRange.addEventListener('change', (e: Event) => {
+    fRange.addEventListener('change', (e: Event) => {
       explore.getContext('2d').clearRect(-Math.PI, -10, 2 * Math.PI, 20)
       let t = <HTMLInputElement>e.target
-      document.getElementById(o.omegaValueId).textContent = (+t.value).toFixed(1)
+      document.getElementById(o.fValueId).textContent = (+t.value).toFixed(1)
     })
-    document.getElementById(o.omegaValueId).textContent = omegaRange.value
+    document.getElementById(o.fValueId).textContent = fRange.value
     tRange.addEventListener('change', (e: Event) => {
       let t = <HTMLInputElement>e.target
       document.getElementById(o.tValueId).textContent = t.value
