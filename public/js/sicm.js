@@ -152,8 +152,8 @@ var DrivenPendulumAnimation = (function () {
                 console.log('animation done', (_this.data.length / et).toFixed(2), 'fps');
             }
         };
-        var omegaRange = document.getElementById(o.omegaRangeId);
-        var omegaRadSec = function () { return +omegaRange.value * 2 * Math.PI; };
+        var fRange = document.getElementById(o.fRangeId);
+        var omegaRadSec = function () { return +fRange.value * 2 * Math.PI; };
         var tRange = document.getElementById(o.tRangeId);
         var diffEq = new DrivenPendulumMap(function () { return ({ omega: omegaRadSec(), a: _this.amplitude }); });
         var anim = document.getElementById(o.animId);
@@ -170,12 +170,12 @@ var DrivenPendulumAnimation = (function () {
             goButton.removeAttribute('disabled');
         };
         var explore = document.getElementById(o.exploreId);
-        omegaRange.addEventListener('change', function (e) {
+        fRange.addEventListener('change', function (e) {
             explore.getContext('2d').clearRect(-Math.PI, -10, 2 * Math.PI, 20);
             var t = e.target;
-            document.getElementById(o.omegaValueId).textContent = (+t.value).toFixed(1);
+            document.getElementById(o.fValueId).textContent = (+t.value).toFixed(1);
         });
-        document.getElementById(o.omegaValueId).textContent = omegaRange.value;
+        document.getElementById(o.fValueId).textContent = fRange.value;
         tRange.addEventListener('change', function (e) {
             var t = e.target;
             document.getElementById(o.tValueId).textContent = t.value;
