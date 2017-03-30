@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Thing
+# title: Thing
 ---
 
 This is one of *the things*.

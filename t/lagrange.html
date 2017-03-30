@@ -6,8 +6,29 @@ Let's begin with the Euler-Lagrange equation:
 
 <katex-display>L = T - V</katex-display>
 
-<katex-display>{\mathcal S}[q] = \int_{t_1}^{t_2}L(t, {\mathbf q}(t), {\mathbf{\dot q}}(t))\, dt</katex-display>
+<katex-display>\mathsf{action}[w] = \int_{t_1}^{t_2}L(t, w(t), w'(t))\, dt</katex-display>
 
+<katex-display>
+  \begin{aligned}
+  x\mapsto f(x) &\longrightarrow x\mapsto {\mathrm E}[f(x+\varepsilon)] \\ \\
+  D[x\mapsto \sin(x^2)](y) &= {\mathrm E}[\sin((y+\varepsilon)^2)] \\
+  &= {\mathrm E}[\sin(y^2 + 2y\varepsilon + \red{\varepsilon^2})] \\
+  &= {\mathrm E}[\sin(y^2 + 2y\varepsilon)] \\
+  &= {\mathrm E}[\sin(y^2) + \red{\varepsilon}\, \blue{2y\cos(y^2)}] \qquad \mathrm{idea:}\quad f(x+\varepsilon) \approx f(x) + \varepsilon f'(x) \\
+  &= 2y \cos(y^2)
+  \end{aligned}
+</katex-display>
+
+<katex-display>
+  \begin{aligned}
+  e^x &= 1 + x + \frac{x^2}{2} + \cdots + \frac{x^n}{n!} + \cdots = \sum_{n=0}^\infty \frac{x^n}{n!} \\ \\
+  f(x+h) &= f(x) + hf'(x) + \frac{h^2}{2}f''(x) + \cdots + \frac{h^n}{n!}f^{(n)}(x) + \cdots \\ \\
+  f(x+h) &= f(x) + (hD)f(x) + \frac{1}{2}(hD)^2f(x) + \cdots + \frac{1}{n!}(hD)^nf(x) + \cdots \\ \\
+  &= \left[\color{#999}{(hD)^0}f + (hD)^1 f + \frac{1}{2}(hD)^2f + \cdots + \frac{1}{n!}(hD)^nf + \cdots\right](x) \\ \\
+  &= \left[\red{\sum_{n=0}^\infty \frac{1}{n!}(hD)^n}f\right](x) \\ \\
+  &= \red{e^{hD}}[f](x)
+  \end{aligned}
+</katex-display>
 
 <katex-display>
   \begin{aligned}
