@@ -25,6 +25,6 @@ Second demo (if time permits): The [Driven Pendulum] with Surfaces of Section.
 
 [SICM]: https://mitpress.mit.edu/sites/default/files/titles/content/sicm_edition_2/book.html
 [Feynman]: http://www.feynmanlectures.caltech.edu/II_19.html
-[Double Pendulum]: http://blog.littleredcomputer.net/math/js/2017/02/11/double-pendulum.html
-[Driven Pendulum]: http://blog.littleredcomputer.net/math/js/2017/02/09/driven-pendulum.html
+[Double Pendulum]: /math/js/2017/02/11/double-pendulum.html
+[Driven Pendulum]: /math/js/2017/02/09/driven-pendulum.html
 [slides]: Physics%20in%20Clojure%2016x9.key
