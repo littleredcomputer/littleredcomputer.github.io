@@ -17,7 +17,7 @@ handled as middleware): to get around that you can wrap expressions in
 
 [Feynman][Feynman] on the Principle of Least Action
 
-The [slides][slides] for the talk.
+The [slides] for the talk. The [video] of the talk.
 
 First demo: The [Double Pendulum].
 
@@ -28,3 +28,4 @@ Second demo (if time permits): The [Driven Pendulum] with Surfaces of Section.
 [Double Pendulum]: /math/js/2017/02/11/double-pendulum.html
 [Driven Pendulum]: /math/js/2017/02/09/driven-pendulum.html
 [slides]: Physics%20in%20Clojure%2016x9.key
+[video]: https://www.youtube.com/watch?v=7PoajCqNKpg
