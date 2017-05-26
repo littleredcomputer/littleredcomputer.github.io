@@ -17,7 +17,7 @@ handled as middleware): to get around that you can wrap expressions in
 
 [Feynman][Feynman] on the Principle of Least Action
 
-The [slides] for the talk. The [video] of the talk.
+The [slides] for the talk. 
 
 First demo: The [Double Pendulum].
 
