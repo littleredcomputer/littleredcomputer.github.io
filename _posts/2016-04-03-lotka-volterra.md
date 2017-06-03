@@ -22,5 +22,5 @@ phase portrait of the system.
   new odexdemo.PredatorPrey('graph', 'phase').draw();
 </script>
 
-[odex]: https://www.npmjs.com/package/
+[odex]: https://www.npmjs.com/package/odex
 [lv]: https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations
