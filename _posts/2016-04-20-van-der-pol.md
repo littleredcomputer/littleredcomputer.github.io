@@ -17,5 +17,5 @@ equations in the browser with [odex][odex].
   new odexdemo.VanDerPol('graph', 'phase').draw();
 </script>
 
-[odex]: https://www.npmjs.com/package/
+[odex]: https://www.npmjs.com/package/odex
 [lv]: https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations

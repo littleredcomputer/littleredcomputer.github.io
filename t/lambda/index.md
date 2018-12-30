@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Clojure/west 2017"
+title: "Lambdaconf 2017 Unconference"
 date: 2015-01-28 20:35:59 -0800
 ---
 
@@ -17,7 +17,7 @@ handled as middleware): to get around that you can wrap expressions in
 
 [Feynman][Feynman] on the Principle of Least Action
 
-The [slides] for the talk. The [video] of the talk.
+The [slides] for the talk. 
 
 First demo: The [Double Pendulum].
 
@@ -27,5 +27,4 @@ Second demo (if time permits): The [Driven Pendulum] with Surfaces of Section.
 [Feynman]: http://www.feynmanlectures.caltech.edu/II_19.html
 [Double Pendulum]: /math/js/2017/02/11/double-pendulum.html
 [Driven Pendulum]: /math/js/2017/02/09/driven-pendulum.html
-[slides]: Physics%20in%20Clojure%2016x9.key
-[video]: https://www.youtube.com/watch?v=7PoajCqNKpg
+[slides]: Functional%20Physics.key
