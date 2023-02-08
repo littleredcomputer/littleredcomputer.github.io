@@ -5,7 +5,7 @@ categories: math js
 using: katex
 ---
 
-Set up the initial conditions and then click <button id="go">go</button> to see
+Set up the initial conditions, and then click <button id="go">go</button> to see
 state evolution.
 
 <div>
@@ -39,7 +39,7 @@ state evolution.
 
 
 
-<script src="/public/js/sicm.bundle.min.js"></script>
+<script src="/public/js/sicmdemo.js"></script>
 <script>
 var A = new s.DoublePendulumAnimation({
   theta0RangeId: 'theta0Range',

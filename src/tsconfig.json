@@ -1,28 +1,9 @@
 {
     "compilerOptions": {
-        "outDir": "../public/js",
-        "target": "es5",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "isolatedModules": false,
-        "jsx": "react",
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "declaration": false,
+        "target": "es2015",
         "noImplicitAny": true,
-        "noImplicitUseStrict": false,
-        "removeComments": true,
-        "noLib": false,
-        "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true
-    },
-    "exclude": [
-        "node_modules"
-    ],
-    "compileOnSave": true,
-    "buildOnSave": false,
-    "atom": {
-        "rewriteTsconfig": false
+        "moduleResolution": "node",
+        "module": "CommonJS"
     },
     "filesGlob": [
       "**/*.ts"

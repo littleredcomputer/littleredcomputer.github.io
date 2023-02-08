@@ -20,7 +20,7 @@ Solution:
 Phase space (parametric plot of y and y&prime;):
 <div id='graph2'></div>
 
-<script src="/public/js/odex-demo.bundle.min.js"></script>
+<script src="/public/js/odexdemo.js"></script>
 <script>
-  new odexdemo.Airy('graph1', 'graph2').draw();
+  new s.Airy('graph1', 'graph2').draw();
 </script>

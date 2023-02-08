@@ -9,24 +9,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/d3": "^4.4.1",
-    "d3": "^4.5.0",
-    "odex": "^2.0.1"
+    "d3": "^7.4.0",
+    "@types/d3": "^7.4.0",
+    "odex": "^3.0.0-rc1"
   },
   "devDependencies": {
-    "browserify": "^14.0.0",
-    "gulp": "^3.9.1",
-    "gulp-debug": "^3.0.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^2.4.0",
-    "gulp-streamify": "^1.0.2",
-    "gulp-typescript": "^3.1.4",
-    "gulp-uglify": "^2.0.1",
-    "tsify": "^3.0.1",
-    "typescript": "^2.2.0",
-    "vinyl": "^2.0.1",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "gulp-watch": "latest"
+    "@babel/preset-env": "^7.20.2",
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
+    "gulp": "^4.0.0",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "typescript": "^4.7.4",
+    "vinyl-source-stream": "^2.0.0"
   }
 }

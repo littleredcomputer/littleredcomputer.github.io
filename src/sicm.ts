@@ -73,25 +73,29 @@ export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
 
   constructor(paramfn: () => {a: number, omega: number}) {
     this.paramfn = paramfn
-    this.S = new Solver(3)
-    this.S.denseOutput = true
-    this.S.absoluteTolerance = 1e-8
     this.PV = StandardMap.principal_value(Math.PI)
   }
 
   generateSection(initialData: number[], n: number, callback: (x: number, y: number) => void) {
-    let params = this.paramfn()
-    let period = 2 * Math.PI / params.omega
-    let t1 = 1000 * period
-    let H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8)
-    this.S.solve(H, 0, [0].concat(initialData), t1, this.S.grid(period, (t, ys) => callback(this.PV(ys[1]), ys[2])))
+    const params = this.paramfn()
+    const period = 2 * Math.PI / params.omega
+    const t1 = 1000 * period
+    const H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8)
+    const S = new Solver(H, 3, { absoluteTolerance: 1e-8 })
+    const f = S.integrate(0, [0].concat(initialData))
+    for (let x = 0; x <= t1; x += period) {
+      const y = f(x)
+      callback(this.PV(y[1]), y[2])
+    }
   }
 
   evolve(params: {omega: number, a: number}, initialData: number[], t1: number, dt: number, callback: (x: number, ys: number[]) => void) {
-    let L = this.LagrangeSysder(1, params.omega, params.a, 9.8)
-    let p0 = performance.now()
-    this.S.solve(L, 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
-    console.log('evolution took', (performance.now() - p0).toFixed(2), 'msec')
+    const L = this.LagrangeSysder(1, params.omega, params.a, 9.8)
+    const p0 = performance.now()
+    const S = new Solver(L, 3, { absoluteTolerance: 1e-8 })
+    const f = S.integrate(0, [0].concat(initialData))
+    for (let x = 0; x <= t1; x += dt) callback(x, f(x))
+    console.log('evolution took', (performance.now() - p0).toFixed(3), 'msec')
   }
 }
 
@@ -111,7 +115,7 @@ export class ExploreMap {
         yRange[1] - e.offsetY / this.context.canvas.height * h]
       let p0 = performance.now()
       this.Explore(cx, cy)
-      console.log('exploration', (performance.now() - p0).toFixed(2), 'msec')
+      console.log('exploration', (performance.now() - p0).toFixed(3), 'msec')
       this.onExplore && this.onExplore(cx, cy)
     }
     this.context.scale(this.context.canvas.width / w, -this.context.canvas.height / h)
@@ -277,13 +281,14 @@ class DoublePendulumMap implements DifferentialEquation {
   }
 
   constructor() {
-    this.S = new Solver(5)  // t, theta, phi, thetadot, phidot
-    this.S.denseOutput = true
-    this.S.absoluteTolerance = 1e-8
   }
 
   evolve(p: DoubleParams, initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void {
-    this.S.solve(this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2), 0, [0].concat(initialData), t1, this.S.grid(dt, callback))
+    const S = new Solver(this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2), 5, { absoluteTolerance: 1e-8 })
+    const f = S.integrate(0, [0].concat(initialData))
+    for (let x = 0; x <= t1; x += dt) {
+      callback(x, f(x))
+    }
   }
 }
 

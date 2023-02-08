@@ -1,44 +1,34 @@
 var gulp = require('gulp')
+var ts = require('gulp-typescript')
 var browserify = require('browserify')
-var streamify = require('gulp-streamify')
-var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
-var tsify = require('tsify')
-var uglify = require('gulp-uglify')
-var watch = require('gulp-watch')
+var babelify = require('babelify')
 
-args = {
-  src: '.',
-  dest: '../public/js'
+function tsc() {
+  return gulp.src('*.ts')
+    .pipe(ts({
+      noImplicitAny: true,
+      target: 'es2015',
+      module: "CommonJS",
+      moduleResolution: 'node'
+    }))
+    .pipe(gulp.dest('dist'))
 }
+exports.tsc = tsc
 
-function bundle_ts(f, s) {
-  return browserify(args.src + '/' + f + '.ts', {debug: true, standalone: s})
-    .plugin(tsify, {global: true})
+function make_bundle(name, app, deps) {
+  return browserify({ standalone: 's' })
+    .transform(babelify, { global: true })
+    .add([app].concat(deps))
     .bundle()
-    .pipe(source(f + '.bundle.js'))
-    .pipe(gulp.dest(args.dest))
-    .pipe(streamify(uglify()))
-    .pipe(rename({extname: '.min.js'}))
-    .pipe(gulp.dest(args.dest));
+    .pipe(source(name))
+    .pipe(gulp.dest('../public/js'))
 }
 
-gulp.task('odex-bundle', function () {
-  return bundle_ts('odex-demo', 'odexdemo')
-})
+exports.odex_demo = odex_demo = () => make_bundle('odexdemo.js', 'dist/odex-demo.js', ['dist/graph.js'])
+exports.sicm_demo = sicm_demo = () => make_bundle('sicmdemo.js', 'dist/sicm.js', ['dist/graph.js'])
 
-gulp.task('sicm-bundle', function () {
-  return bundle_ts('sicm', 's')
-})
-
-gulp.task('watch', function () {
-  watch('odex-demo.ts', function () {
-    gulp.start('odex-bundle')
-  })
-  watch('sicm.ts', function () {
-    gulp.start('sicm-bundle')
-  })
-})
-
-gulp.task('default', ['odex-bundle', 'sicm-bundle'])
-
+exports.default = gulp.series(
+  tsc,
+  gulp.parallel(odex_demo, sicm_demo)
+)

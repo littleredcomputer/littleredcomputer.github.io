@@ -23,7 +23,7 @@ and the motion?
 
 
 
-<script src="/public/js/sicm.bundle.min.js"></script>
+<script src="/public/js/sicmdemo.js"></script>
 <script>
 var A = new s.DrivenPendulumAnimation({
   fValueId: 'fValue',

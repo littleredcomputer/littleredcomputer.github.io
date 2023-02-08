@@ -9,7 +9,7 @@ using: katex
 <canvas id="s" width="400" height="400" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <canvas id="p" width="400" height="400" style="border-style: solid; border-color: #ccc; border-width: 4px"></canvas>
 <div>theta<sub>0</sub>: <span id="theta0"></span>, thetadot<sub>0</sub>: <span id="thetadot0"></span></div>
-<script src="/public/js/sicm.bundle.min.js"></script>
+<script src="/public/js/sicmdemo.js"></script>
 <script>
   var S = new s.StandardMap(0.6)
   var M = new s.ExploreMap('s', S, [0, 2*Math.PI], [0, 2*Math.PI])
@@ -20,7 +20,7 @@ using: katex
     document.getElementById('theta0').textContent = x.toFixed(3)
     document.getElementById('thetadot0').textContent = y.toFixed(3)
   }
-  
+
   //N.context.fillStyle = 'red'
   //N.context.fillRect(0,0,2,2);
 </script>
