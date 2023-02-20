@@ -15,6 +15,12 @@ interface DifferentialEquation {
 
 const twoPi = Math.PI * 2
 
+function getElementOrDie(id: string): HTMLElement {
+  const elt = document.getElementById(id)
+  if (!elt) throw Error("Could not get element " + id)
+  return elt
+}
+
 export class StandardMap implements HamiltonMap {
   K: number
   PV: (x: number) => number
@@ -54,13 +60,15 @@ export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
   PV: (x: number) => number
 
   HamiltonSysder(m: number, l: number, omega: number, a: number, g: number): Derivative {
-    return (x, [t, theta, p_theta]) => {
+    return (x, [t, theta, p_theta], yp) => {
        let _0002 = Math.pow(l, 2)
        let _0003 = omega * t
        let _0004 = Math.sin(theta)
        let _0005 = Math.cos(theta)
        let _0006 = Math.sin(_0003)
-       return [1, (a * l * m * omega * _0006 * _0004 + p_theta) / (_0002 * m), (- Math.pow(a, 2) * l * m * Math.pow(omega, 2) * Math.pow(_0006, 2) * _0005 * _0004 - a * omega * p_theta * _0006 * _0005 - g * _0002 * m * _0004) / l]
+       yp[0] = 1
+       yp[1] = (a * l * m * omega * _0006 * _0004 + p_theta) / (_0002 * m)
+       yp[2] = (- Math.pow(a, 2) * l * m * Math.pow(omega, 2) * Math.pow(_0006, 2) * _0005 * _0004 - a * omega * p_theta * _0006 * _0005 - g * _0002 * m * _0004) / l
     }
   }
 
@@ -81,7 +89,7 @@ export class DrivenPendulumMap implements HamiltonMap, DifferentialEquation {
     const period = 2 * Math.PI / params.omega
     const t1 = 1000 * period
     const H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8)
-    const S = new Solver(H, 3, { absoluteTolerance: 1e-8 })
+    const S = new Solver(H, 3, { absoluteTolerance: 1e-8, rawFunction: true })
     const f = S.integrate(0, [0].concat(initialData))
     for (let x = 0; x <= t1; x += period) {
       const y = f(x)
@@ -108,7 +116,9 @@ export class ExploreMap {
   constructor(canvas: string, M: HamiltonMap, xRange: number[], yRange: number[]) {
     this.canvas = <HTMLCanvasElement> document.getElementById(canvas)
     this.M = M
-    this.context = this.canvas.getContext('2d')
+    const ctx = this.canvas.getContext('2d')
+    if (!ctx) throw Error("cannot get 2d context")
+    this.context = ctx
     let [w, h] = [xRange[1] - xRange[0], yRange[1] - yRange[0]]
     this.canvas.onmousedown = (e: MouseEvent) => {
       let [cx, cy] = [e.offsetX / this.context.canvas.width * w + xRange[0],
@@ -165,30 +175,36 @@ export class DrivenPendulumAnimation {
     let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
     let diffEq = new DrivenPendulumMap(() => ({omega: omegaRadSec(), a: this.amplitude}))
     let anim = <HTMLCanvasElement>document.getElementById(o.animId)
-    this.ctx = anim.getContext('2d')
+    const ctx = anim.getContext('2d')
+    if (!ctx) throw ("cannot get 2d context")
+    this.ctx = ctx
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
     this.ctx.translate(this.animLogicalSize, -this.animLogicalSize)
     let xMap = new ExploreMap('p', diffEq, [-Math.PI, Math.PI], [-10, 10])
-    let goButton = document.getElementById(o.goButtonId)
+    const goButton = getElementOrDie(o.goButtonId)
+    const theta0Elt = getElementOrDie(o.theta0Id)
+    const thetaDotElt = getElementOrDie(o.thetaDot0Id)
+    const fValueElt = getElementOrDie(o.fValueId)
+    const tValueElt = getElementOrDie(o.tValueId)
     xMap.onExplore = (theta0: number, thetaDot0: number) => {
       console.log('onExplore', theta0, thetaDot0)
-      document.getElementById(o.theta0Id).textContent = theta0.toFixed(3)
-      document.getElementById(o.thetaDot0Id).textContent = thetaDot0.toFixed(3)
+      theta0Elt.textContent = theta0.toFixed(3)
+      thetaDotElt.textContent = thetaDot0.toFixed(3)
       this.initialData = [theta0, thetaDot0]
       goButton.removeAttribute('disabled')
     }
-    let explore = <HTMLCanvasElement>document.getElementById(o.exploreId)
+    const explore = getElementOrDie(o.exploreId) as HTMLCanvasElement
     fRange.addEventListener('change', (e: Event) => {
-      explore.getContext('2d').clearRect(-Math.PI, -10, 2 * Math.PI, 20)
+      explore.getContext('2d')?.clearRect(-Math.PI, -10, 2 * Math.PI, 20)
       let t = <HTMLInputElement>e.target
-      document.getElementById(o.fValueId).textContent = (+t.value).toFixed(1)
+      fValueElt.textContent = (+t.value).toFixed(1)
     })
-    document.getElementById(o.fValueId).textContent = fRange.value
+    fValueElt.textContent = fRange.value
     tRange.addEventListener('change', (e: Event) => {
       let t = <HTMLInputElement>e.target
-      document.getElementById(o.tValueId).textContent = t.value
+      tValueElt.textContent = t.value
     })
-    document.getElementById(o.tValueId).textContent = tRange.value
+    tValueElt.textContent = tRange.value
     goButton.setAttribute('disabled', 'disabled')
     goButton.addEventListener('click', () => {
       // (re)solve the differential equation and update the data. Kick off the animation.
@@ -266,7 +282,7 @@ class DoublePendulumMap implements DifferentialEquation {
 
   LagrangeSysder(l1: number, m1: number, l2: number, m2: number): Derivative {
     const g = 9.8
-    return (x, [t, theta, phi, thetadot, phidot]) => {
+    return (x, [t, theta, phi, thetadot, phidot], yp) => {
       let _0002 = Math.pow(phidot, 2)
       let _0003 = Math.sin(phi)
       let _0005 = - phi
@@ -276,7 +292,11 @@ class DoublePendulumMap implements DifferentialEquation {
       let _000e = Math.cos(_000b)
       let _000f = Math.sin(_000b)
       let _0011 = Math.pow(_000f, 2)
-      return [1, thetadot, phidot, (- l1 * m2 * _0008 * _000f * _000e - l2 * m2 * _0002 * _000f + g * m2 * _000e * _0003 - g * m1 * _0007 - g * m2 * _0007) / (l1 * m2 * _0011 + l1 * m1), (l2 * m2 * _0002 * _000f * _000e + l1 * m1 * _0008 * _000f + l1 * m2 * _0008 * _000f + g * m1 * _0007 * _000e + g * m2 * _0007 * _000e - g * m1 * _0003 - g * m2 * _0003) / (l2 * m2 * _0011 + l2 * m1)]
+      yp[0] = 1
+      yp[1] = thetadot
+      yp[2] = phidot
+      yp[3] = (- l1 * m2 * _0008 * _000f * _000e - l2 * m2 * _0002 * _000f + g * m2 * _000e * _0003 - g * m1 * _0007 - g * m2 * _0007) / (l1 * m2 * _0011 + l1 * m1)
+      yp[4] = (l2 * m2 * _0002 * _000f * _000e + l1 * m1 * _0008 * _000f + l1 * m2 * _0008 * _000f + g * m1 * _0007 * _000e + g * m2 * _0007 * _000e - g * m1 * _0003 - g * m2 * _0003) / (l2 * m2 * _0011 + l2 * m1)
     }
   }
 
@@ -284,7 +304,7 @@ class DoublePendulumMap implements DifferentialEquation {
   }
 
   evolve(p: DoubleParams, initialData: number[], t1: number, dt: number, callback: (t: number, y: number[]) => void): void {
-    const S = new Solver(this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2), 5, { absoluteTolerance: 1e-8 })
+    const S = new Solver(this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2), 5, { absoluteTolerance: 1e-8, rawFunction: true })
     const f = S.integrate(0, [0].concat(initialData))
     for (let x = 0; x <= t1; x += dt) {
       callback(x, f(x))
@@ -300,8 +320,8 @@ export class DoublePendulumAnimation {
   frameIndex: number
   animating: boolean
   params: DoubleParams
-  valueUpdater(toId: string) {
-    return (e: Event) => document.getElementById(toId).textContent = (<HTMLInputElement>e.target).value
+  valueUpdater(elt: HTMLElement) {
+    return (e: Event) => elt.textContent = (<HTMLInputElement>e.target).value
   }
 
   constructor(o: {
@@ -321,26 +341,35 @@ export class DoublePendulumAnimation {
     this.animating = false
     let deg2rad = (d: number) => d * 2 * Math.PI / 360
     let theta0Range = <HTMLInputElement>document.getElementById(o.theta0RangeId)
-    theta0Range.addEventListener('change', this.valueUpdater(o.theta0ValueId))
-    theta0Range.addEventListener('input', this.valueUpdater(o.theta0ValueId))
-    let phi0Range = <HTMLInputElement>document.getElementById(o.phi0RangeId)
-    phi0Range.addEventListener('change', this.valueUpdater(o.phi0ValueId))
-    phi0Range.addEventListener('input', this.valueUpdater(o.phi0ValueId))
-    let tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
-    tRange.addEventListener('change', this.valueUpdater(o.tValueId))
-    tRange.addEventListener('input', this.valueUpdater(o.tValueId))
-    let mRange = <HTMLInputElement>document.getElementById(o.mRangeId)
-    mRange.addEventListener('change', this.valueUpdater(o.mValueId))
-    mRange.addEventListener('input', this.valueUpdater(o.mValueId))
-    let lRange = <HTMLInputElement>document.getElementById(o.lRangeId)
-    lRange.addEventListener('change', this.valueUpdater(o.lValueId))
-    lRange.addEventListener('input', this.valueUpdater(o.lValueId))
+    const theta0Value = getElementOrDie(o.theta0ValueId)
+    theta0Range.addEventListener('change', this.valueUpdater(theta0Value))
+    theta0Range.addEventListener('input', this.valueUpdater(theta0Value))
+    const phi0Range = <HTMLInputElement>document.getElementById(o.phi0RangeId)
+    const phi0Value = getElementOrDie(o.phi0ValueId)
+    phi0Range.addEventListener('change', this.valueUpdater(phi0Value))
+    phi0Range.addEventListener('input', this.valueUpdater(phi0Value))
+    const tRange = <HTMLInputElement>document.getElementById(o.tRangeId)
+    const tValue = getElementOrDie(o.tValueId)
+    tRange.addEventListener('change', this.valueUpdater(tValue))
+    tRange.addEventListener('input', this.valueUpdater(tValue))
+    const mRange = <HTMLInputElement>document.getElementById(o.mRangeId)
+    const mValue = getElementOrDie(o.mValueId)
+    mRange.addEventListener('change', this.valueUpdater(mValue))
+    mRange.addEventListener('input', this.valueUpdater(mValue))
+    const lRange = <HTMLInputElement>document.getElementById(o.lRangeId)
+    const lValue = getElementOrDie(o.lValueId)
+    lRange.addEventListener('change', this.valueUpdater(lValue))
+    lRange.addEventListener('input', this.valueUpdater(lValue))
     let anim = <HTMLCanvasElement>document.getElementById(o.animId)
-    this.ctx = anim.getContext('2d')
+    const ctx = anim.getContext('2d')
+    if (!ctx) throw Error("cannot get 2d context")
+    this.ctx = ctx
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize))
     this.ctx.translate(this.animLogicalSize, -this.animLogicalSize)
     let diffEq = new DoublePendulumMap()
-    document.getElementById(o.goButtonId).addEventListener('click', () =>  {
+    const goButton = document.getElementById(o.goButtonId)
+    if (!goButton) throw Error("cannot get element " + o.goButtonId)
+    goButton.addEventListener('click', () =>  {
       let dt = 1 / 60
       let t1 = +tRange.value
       let n = Math.ceil(t1 / dt)

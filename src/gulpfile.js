@@ -8,6 +8,7 @@ function tsc() {
   return gulp.src('*.ts')
     .pipe(ts({
       noImplicitAny: true,
+      strictNullChecks: true,
       target: 'es2015',
       module: "CommonJS",
       moduleResolution: 'node'

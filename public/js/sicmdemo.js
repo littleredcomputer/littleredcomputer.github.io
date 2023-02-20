@@ -114,6 +114,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.DoublePendulumAnimation = exports.DrivenPendulumAnimation = exports.ExploreMap = exports.DrivenPendulumMap = exports.StandardMap = void 0;
 var odex_1 = require("odex/src/odex");
 var twoPi = Math.PI * 2;
+function getElementOrDie(id) {
+  var elt = document.getElementById(id);
+  if (!elt) throw Error("Could not get element " + id);
+  return elt;
+}
 var StandardMap = /*#__PURE__*/function () {
   function StandardMap(K) {
     _classCallCheck(this, StandardMap);
@@ -159,7 +164,7 @@ var DrivenPendulumMap = /*#__PURE__*/function () {
   _createClass(DrivenPendulumMap, [{
     key: "HamiltonSysder",
     value: function HamiltonSysder(m, l, omega, a, g) {
-      return function (x, _ref) {
+      return function (x, _ref, yp) {
         var _ref2 = _slicedToArray(_ref, 3),
           t = _ref2[0],
           theta = _ref2[1],
@@ -169,7 +174,9 @@ var DrivenPendulumMap = /*#__PURE__*/function () {
         var _0004 = Math.sin(theta);
         var _0005 = Math.cos(theta);
         var _0006 = Math.sin(_0003);
-        return [1, (a * l * m * omega * _0006 * _0004 + p_theta) / (_0002 * m), (-Math.pow(a, 2) * l * m * Math.pow(omega, 2) * Math.pow(_0006, 2) * _0005 * _0004 - a * omega * p_theta * _0006 * _0005 - g * _0002 * m * _0004) / l];
+        yp[0] = 1;
+        yp[1] = (a * l * m * omega * _0006 * _0004 + p_theta) / (_0002 * m);
+        yp[2] = (-Math.pow(a, 2) * l * m * Math.pow(omega, 2) * Math.pow(_0006, 2) * _0005 * _0004 - a * omega * p_theta * _0006 * _0005 - g * _0002 * m * _0004) / l;
       };
     }
   }, {
@@ -192,7 +199,8 @@ var DrivenPendulumMap = /*#__PURE__*/function () {
       var t1 = 1000 * period;
       var H = this.HamiltonSysder(1, 1, params.omega, params.a, 9.8);
       var S = new odex_1.Solver(H, 3, {
-        absoluteTolerance: 1e-8
+        absoluteTolerance: 1e-8,
+        rawFunction: true
       });
       var f = S.integrate(0, [0].concat(initialData));
       for (var x = 0; x <= t1; x += period) {
@@ -231,7 +239,9 @@ var ExploreMap = /*#__PURE__*/function () {
     };
     this.canvas = document.getElementById(canvas);
     this.M = M;
-    this.context = this.canvas.getContext('2d');
+    var ctx = this.canvas.getContext('2d');
+    if (!ctx) throw Error("cannot get 2d context");
+    this.context = ctx;
     var w = xRange[1] - xRange[0],
       h = yRange[1] - yRange[0];
     this.canvas.onmousedown = function (e) {
@@ -315,30 +325,37 @@ var DrivenPendulumAnimation = /*#__PURE__*/_createClass(function DrivenPendulumA
     };
   });
   var anim = document.getElementById(o.animId);
-  this.ctx = anim.getContext('2d');
+  var ctx = anim.getContext('2d');
+  if (!ctx) throw "cannot get 2d context";
+  this.ctx = ctx;
   this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize));
   this.ctx.translate(this.animLogicalSize, -this.animLogicalSize);
   var xMap = new ExploreMap('p', diffEq, [-Math.PI, Math.PI], [-10, 10]);
-  var goButton = document.getElementById(o.goButtonId);
+  var goButton = getElementOrDie(o.goButtonId);
+  var theta0Elt = getElementOrDie(o.theta0Id);
+  var thetaDotElt = getElementOrDie(o.thetaDot0Id);
+  var fValueElt = getElementOrDie(o.fValueId);
+  var tValueElt = getElementOrDie(o.tValueId);
   xMap.onExplore = function (theta0, thetaDot0) {
     console.log('onExplore', theta0, thetaDot0);
-    document.getElementById(o.theta0Id).textContent = theta0.toFixed(3);
-    document.getElementById(o.thetaDot0Id).textContent = thetaDot0.toFixed(3);
+    theta0Elt.textContent = theta0.toFixed(3);
+    thetaDotElt.textContent = thetaDot0.toFixed(3);
     _this2.initialData = [theta0, thetaDot0];
     goButton.removeAttribute('disabled');
   };
-  var explore = document.getElementById(o.exploreId);
+  var explore = getElementOrDie(o.exploreId);
   fRange.addEventListener('change', function (e) {
-    explore.getContext('2d').clearRect(-Math.PI, -10, 2 * Math.PI, 20);
+    var _a;
+    (_a = explore.getContext('2d')) === null || _a === void 0 ? void 0 : _a.clearRect(-Math.PI, -10, 2 * Math.PI, 20);
     var t = e.target;
-    document.getElementById(o.fValueId).textContent = (+t.value).toFixed(1);
+    fValueElt.textContent = (+t.value).toFixed(1);
   });
-  document.getElementById(o.fValueId).textContent = fRange.value;
+  fValueElt.textContent = fRange.value;
   tRange.addEventListener('change', function (e) {
     var t = e.target;
-    document.getElementById(o.tValueId).textContent = t.value;
+    tValueElt.textContent = t.value;
   });
-  document.getElementById(o.tValueId).textContent = tRange.value;
+  tValueElt.textContent = tRange.value;
   goButton.setAttribute('disabled', 'disabled');
   goButton.addEventListener('click', function () {
     // (re)solve the differential equation and update the data. Kick off the animation.
@@ -373,7 +390,7 @@ var DoublePendulumMap = /*#__PURE__*/function () {
     key: "LagrangeSysder",
     value: function LagrangeSysder(l1, m1, l2, m2) {
       var g = 9.8;
-      return function (x, _ref5) {
+      return function (x, _ref5, yp) {
         var _ref6 = _slicedToArray(_ref5, 5),
           t = _ref6[0],
           theta = _ref6[1],
@@ -389,14 +406,19 @@ var DoublePendulumMap = /*#__PURE__*/function () {
         var _000e = Math.cos(_000b);
         var _000f = Math.sin(_000b);
         var _0011 = Math.pow(_000f, 2);
-        return [1, thetadot, phidot, (-l1 * m2 * _0008 * _000f * _000e - l2 * m2 * _0002 * _000f + g * m2 * _000e * _0003 - g * m1 * _0007 - g * m2 * _0007) / (l1 * m2 * _0011 + l1 * m1), (l2 * m2 * _0002 * _000f * _000e + l1 * m1 * _0008 * _000f + l1 * m2 * _0008 * _000f + g * m1 * _0007 * _000e + g * m2 * _0007 * _000e - g * m1 * _0003 - g * m2 * _0003) / (l2 * m2 * _0011 + l2 * m1)];
+        yp[0] = 1;
+        yp[1] = thetadot;
+        yp[2] = phidot;
+        yp[3] = (-l1 * m2 * _0008 * _000f * _000e - l2 * m2 * _0002 * _000f + g * m2 * _000e * _0003 - g * m1 * _0007 - g * m2 * _0007) / (l1 * m2 * _0011 + l1 * m1);
+        yp[4] = (l2 * m2 * _0002 * _000f * _000e + l1 * m1 * _0008 * _000f + l1 * m2 * _0008 * _000f + g * m1 * _0007 * _000e + g * m2 * _0007 * _000e - g * m1 * _0003 - g * m2 * _0003) / (l2 * m2 * _0011 + l2 * m1);
       };
     }
   }, {
     key: "evolve",
     value: function evolve(p, initialData, t1, dt, callback) {
       var S = new odex_1.Solver(this.LagrangeSysder(p.l1, p.m1, p.l2, p.m2), 5, {
-        absoluteTolerance: 1e-8
+        absoluteTolerance: 1e-8,
+        rawFunction: true
       });
       var f = S.integrate(0, [0].concat(initialData));
       for (var x = 0; x <= t1; x += dt) {
@@ -454,26 +476,35 @@ var DoublePendulumAnimation = /*#__PURE__*/function () {
       return d * 2 * Math.PI / 360;
     };
     var theta0Range = document.getElementById(o.theta0RangeId);
-    theta0Range.addEventListener('change', this.valueUpdater(o.theta0ValueId));
-    theta0Range.addEventListener('input', this.valueUpdater(o.theta0ValueId));
+    var theta0Value = getElementOrDie(o.theta0ValueId);
+    theta0Range.addEventListener('change', this.valueUpdater(theta0Value));
+    theta0Range.addEventListener('input', this.valueUpdater(theta0Value));
     var phi0Range = document.getElementById(o.phi0RangeId);
-    phi0Range.addEventListener('change', this.valueUpdater(o.phi0ValueId));
-    phi0Range.addEventListener('input', this.valueUpdater(o.phi0ValueId));
+    var phi0Value = getElementOrDie(o.phi0ValueId);
+    phi0Range.addEventListener('change', this.valueUpdater(phi0Value));
+    phi0Range.addEventListener('input', this.valueUpdater(phi0Value));
     var tRange = document.getElementById(o.tRangeId);
-    tRange.addEventListener('change', this.valueUpdater(o.tValueId));
-    tRange.addEventListener('input', this.valueUpdater(o.tValueId));
+    var tValue = getElementOrDie(o.tValueId);
+    tRange.addEventListener('change', this.valueUpdater(tValue));
+    tRange.addEventListener('input', this.valueUpdater(tValue));
     var mRange = document.getElementById(o.mRangeId);
-    mRange.addEventListener('change', this.valueUpdater(o.mValueId));
-    mRange.addEventListener('input', this.valueUpdater(o.mValueId));
+    var mValue = getElementOrDie(o.mValueId);
+    mRange.addEventListener('change', this.valueUpdater(mValue));
+    mRange.addEventListener('input', this.valueUpdater(mValue));
     var lRange = document.getElementById(o.lRangeId);
-    lRange.addEventListener('change', this.valueUpdater(o.lValueId));
-    lRange.addEventListener('input', this.valueUpdater(o.lValueId));
+    var lValue = getElementOrDie(o.lValueId);
+    lRange.addEventListener('change', this.valueUpdater(lValue));
+    lRange.addEventListener('input', this.valueUpdater(lValue));
     var anim = document.getElementById(o.animId);
-    this.ctx = anim.getContext('2d');
+    var ctx = anim.getContext('2d');
+    if (!ctx) throw Error("cannot get 2d context");
+    this.ctx = ctx;
     this.ctx.scale(anim.width / (2 * this.animLogicalSize), -anim.height / (2 * this.animLogicalSize));
     this.ctx.translate(this.animLogicalSize, -this.animLogicalSize);
     var diffEq = new DoublePendulumMap();
-    document.getElementById(o.goButtonId).addEventListener('click', function () {
+    var goButton = document.getElementById(o.goButtonId);
+    if (!goButton) throw Error("cannot get element " + o.goButtonId);
+    goButton.addEventListener('click', function () {
       var dt = 1 / 60;
       var t1 = +tRange.value;
       var n = Math.ceil(t1 / dt);
@@ -500,9 +531,9 @@ var DoublePendulumAnimation = /*#__PURE__*/function () {
   }
   _createClass(DoublePendulumAnimation, [{
     key: "valueUpdater",
-    value: function valueUpdater(toId) {
+    value: function valueUpdater(elt) {
       return function (e) {
-        return document.getElementById(toId).textContent = e.target.value;
+        return elt.textContent = e.target.value;
       };
     }
   }]);
@@ -14058,6 +14089,7 @@ var Solver = /*#__PURE__*/function () {
    * @param options dictionary of option updates
    */
   function Solver(f, n) {
+    var _this = this;
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     _classCallCheck(this, Solver);
     this.hMax = 0; // maximum step size chosen for this problem
@@ -14070,9 +14102,15 @@ var Solver = /*#__PURE__*/function () {
     this.nAccept = 0;
     this.nReject = 0;
     this.iPt = 0;
-    this.f = f;
-    this.n = n;
     this.options = Object.assign({}, Solver.defaults, options);
+    this.n = n;
+    if (this.options.rawFunction) {
+      this.f = f;
+    } else {
+      this.f = function (x, y, yp) {
+        _this.copy(yp, f(x, y, []));
+      };
+    }
     if (this.options.maxSteps <= 0) throw new Error('maxSteps must be positive');
     if (this.options.maxExtrapolationColumns <= 2) throw new Error('maxExtrapolationColumns must be > 2');
     var maxK = this.options.maxExtrapolationColumns;
@@ -14124,8 +14162,17 @@ var Solver = /*#__PURE__*/function () {
     this.w = Array(maxK);
     this.w[0] = 0;
     this.scal = Array(this.n);
+    this.fx = Array(this.n);
+    this.dy = Array(this.n);
+    this.dz = Array(this.n);
+    this.yh1 = Array(this.n);
+    this.yh2 = Array(this.n);
     this.iPoint = Array(maxK + 1);
     this.errfac = Array(2 * maxK);
+    var ncom = 2 * this.options.maxExtrapolationColumns + 5 + this.options.denseComponents.length;
+    this.dens = Array(ncom);
+    this.ap = Array(31);
+    this.t0i = Array(this.n);
     this.posneg = 1;
   }
   /**
@@ -14216,13 +14263,14 @@ var Solver = /*#__PURE__*/function () {
   }, {
     key: "interp",
     value:
-    // Generate interpolation data
+    /**
+     *  Generate interpolation data
+     */
     function interp(y, imit) {
       // computes the coefficients of the interpolation formula
       var n = this.options.denseComponents.length;
-      var a = new Array(31);
       // begin with Hermite interpolation
-      for (var i = 0; i < this.options.denseComponents.length; ++i) {
+      for (var i = 0; i < n; ++i) {
         var y0 = y[i];
         var y1 = y[2 * n + i];
         var yp0 = y[n + i];
@@ -14241,41 +14289,44 @@ var Solver = /*#__PURE__*/function () {
         var ph3 = 6 * (bspl - aspl);
         // compute the further coefficients
         if (imit >= 1) {
-          a[1] = 16 * (y[5 * n + i] - ph1);
+          this.ap[1] = 16 * (y[5 * n + i] - ph1);
           if (imit >= 3) {
-            a[3] = 16 * (y[7 * n + i] - ph3 + 3 * a[1]);
+            this.ap[3] = 16 * (y[7 * n + i] - ph3 + 3 * this.ap[1]);
             if (imit >= 5) {
               for (var im = 5; im <= imit; im += 2) {
                 var fac1 = im * (im - 1) / 2;
                 var fac2 = fac1 * (im - 2) * (im - 3) * 2;
-                a[im] = 16 * (y[(im + 4) * n + i] + fac1 * a[im - 2] - fac2 * a[im - 4]);
+                this.ap[im] = 16 * (y[(im + 4) * n + i] + fac1 * this.ap[im - 2] - fac2 * this.ap[im - 4]);
               }
             }
           }
         }
-        a[0] = (y[4 * n + i] - ph0) * 16;
+        this.ap[0] = (y[4 * n + i] - ph0) * 16;
         if (imit >= 2) {
-          a[2] = (y[n * 6 + i] - ph2 + a[0]) * 16;
+          this.ap[2] = (y[n * 6 + i] - ph2 + this.ap[0]) * 16;
           if (imit >= 4) {
             for (var _im = 4; _im <= imit; _im += 2) {
               var _fac = _im * (_im - 1) / 2;
               var _fac2 = _im * (_im - 1) * (_im - 2) * (_im - 3);
-              a[_im] = (y[n * (_im + 4) + i] + a[_im - 2] * _fac - a[_im - 4] * _fac2) * 16;
+              this.ap[_im] = (y[n * (_im + 4) + i] + this.ap[_im - 2] * _fac - this.ap[_im - 4] * _fac2) * 16;
             }
           }
         }
-        for (var _im2 = 0; _im2 <= imit; ++_im2) y[n * (_im2 + 4) + i] = a[_im2];
+        for (var _im2 = 0; _im2 <= imit; ++_im2) y[n * (_im2 + 4) + i] = this.ap[_im2];
       }
     }
-    // Given interpolation data, produce the dense output function over the solution
-    // segment [xOld, xOld+h].
+    /**
+     * Given interpolation data, produce the dense output function over the solution
+     * segment [xOld, xOld+h].
+     */
   }, {
     key: "contex",
-    value: function contex(xOld, h, imit, y) {
-      var _this = this;
+    value: function contex(xOld, h, imit) {
+      var _this2 = this;
+      var y = this.dens.slice();
       return function (c, x) {
-        var nrd = _this.options.denseComponents.length;
-        var i = _this.options.denseComponents.indexOf(c);
+        var nrd = _this2.options.denseComponents.length;
+        var i = _this2.options.denseComponents.indexOf(c);
         if (i < 0) throw new Error('no dense output available for component ' + c);
         var theta = (x - xOld) / h;
         var theta1 = 1 - theta;
@@ -14304,14 +14355,11 @@ var Solver = /*#__PURE__*/function () {
   }, {
     key: "midex",
     value: function midex(j, h, x, y, yprime) {
-      var dy = Array(this.n);
-      var yh1 = Array(this.n);
-      var yh2 = Array(this.n);
       var hj = h / this.nj[j];
       // Euler starting step
       for (var i = 0; i < this.n; ++i) {
-        yh1[i] = y[i];
-        yh2[i] = y[i] + hj * yprime[i];
+        this.yh1[i] = y[i];
+        this.yh2[i] = y[i] + hj * yprime[i];
       }
       // Explicit midpoint rule
       var m = this.nj[j] - 1;
@@ -14319,20 +14367,20 @@ var Solver = /*#__PURE__*/function () {
       for (var mm = 1; mm <= m; ++mm) {
         if (this.options.denseOutput && mm === njMid) {
           for (var _i5 = 0; _i5 < this.options.denseComponents.length; ++_i5) {
-            this.ySafe[j][_i5] = yh2[this.options.denseComponents[_i5]];
+            this.ySafe[j][_i5] = this.yh2[this.options.denseComponents[_i5]];
           }
         }
-        this.copy(dy, this.f(x + hj * mm, yh2));
+        this.f(x + hj * mm, this.yh2, this.dy);
         if (this.options.denseOutput && Math.abs(mm - njMid) <= 2 * j + 1) {
           ++this.iPt;
           for (var _i6 = 0; _i6 < this.options.denseComponents.length; ++_i6) {
-            this.fSafe[this.iPt - 1][_i6] = dy[this.options.denseComponents[_i6]];
+            this.fSafe[this.iPt - 1][_i6] = this.dy[this.options.denseComponents[_i6]];
           }
         }
         for (var _i7 = 0; _i7 < this.n; ++_i7) {
-          var ys = yh1[_i7];
-          yh1[_i7] = yh2[_i7];
-          yh2[_i7] = ys + 2 * hj * dy[_i7];
+          var ys = this.yh1[_i7];
+          this.yh1[_i7] = this.yh2[_i7];
+          this.yh2[_i7] = ys + 2 * hj * this.dy[_i7];
         }
         if (mm <= this.options.stabilityCheckCount && j < this.options.stabilityCheckTableLines) {
           // stability check
@@ -14342,7 +14390,7 @@ var Solver = /*#__PURE__*/function () {
           }
           var del2 = 0;
           for (var _i9 = 0; _i9 < this.n; ++_i9) {
-            del2 += Math.pow((dy[_i9] - yprime[_i9]) / this.scal[_i9], 2);
+            del2 += Math.pow((this.dy[_i9] - yprime[_i9]) / this.scal[_i9], 2);
           }
           var quot = del2 / Math.max(this.options.uRound, del1);
           if (quot > 4) {
@@ -14352,15 +14400,15 @@ var Solver = /*#__PURE__*/function () {
         }
       }
       // final smoothing step
-      this.copy(dy, this.f(x + h, yh2));
+      this.f(x + h, this.yh2, this.dy);
       if (this.options.denseOutput && njMid <= 2 * j + 1) {
         ++this.iPt;
         for (var _i10 = 0; _i10 < this.options.denseComponents.length; ++_i10) {
-          this.fSafe[this.iPt - 1][_i10] = dy[this.options.denseComponents[_i10]];
+          this.fSafe[this.iPt - 1][_i10] = this.dy[this.options.denseComponents[_i10]];
         }
       }
       for (var _i11 = 0; _i11 < this.n; ++_i11) {
-        this.t[j][_i11] = (yh1[_i11] + yh2[_i11] + hj * dy[_i11]) / 2;
+        this.t[j][_i11] = (this.yh1[_i11] + this.yh2[_i11] + hj * this.dy[_i11]) / 2;
       }
       this.nEval += this.nj[j];
       // polynomial extrapolation
@@ -14408,17 +14456,15 @@ var Solver = /*#__PURE__*/function () {
     key: "acceptStep",
     value: function acceptStep(kc, h, x, y, dz) {
       // label 60
-      var ncom = 2 * this.options.maxExtrapolationColumns + 5 + this.options.denseComponents.length;
-      var dens = Array(ncom);
       var kmit = 2 * kc - this.options.interpolationFormulaDegree + 1;
       var newHoptde = undefined;
       if (this.options.denseOutput) {
         var nrd = this.options.denseComponents.length;
         // kmit = mu of the paper
-        for (var i = 0; i < nrd; ++i) dens[i] = y[this.options.denseComponents[i]];
-        for (var _i14 = 0; _i14 < nrd; ++_i14) dens[nrd + _i14] = h * dz[this.options.denseComponents[_i14]];
+        for (var i = 0; i < nrd; ++i) this.dens[i] = y[this.options.denseComponents[i]];
+        for (var _i14 = 0; _i14 < nrd; ++_i14) this.dens[nrd + _i14] = h * dz[this.options.denseComponents[_i14]];
         var kln = 2 * nrd;
-        for (var _i15 = 0; _i15 < nrd; ++_i15) dens[kln + _i15] = this.t[0][this.options.denseComponents[_i15]];
+        for (var _i15 = 0; _i15 < nrd; ++_i15) this.dens[kln + _i15] = this.t[0][this.options.denseComponents[_i15]];
         // compute solution at mid-point
         for (var j = 2; j <= kc; ++j) {
           for (var l = j; l >= 2; --l) {
@@ -14429,13 +14475,12 @@ var Solver = /*#__PURE__*/function () {
           }
         }
         var krn = 4 * nrd;
-        for (var _i17 = 0; _i17 < nrd; ++_i17) dens[krn + _i17] = this.ySafe[0][_i17];
+        for (var _i17 = 0; _i17 < nrd; ++_i17) this.dens[krn + _i17] = this.ySafe[0][_i17];
         // compute first derivative at right end
-        var t0i = Array(this.n);
-        for (var _i18 = 0; _i18 < this.n; ++_i18) t0i[_i18] = this.t[0][_i18];
-        var fx = this.f(x + h, t0i);
+        for (var _i18 = 0; _i18 < this.n; ++_i18) this.t0i[_i18] = this.t[0][_i18];
+        this.f(x + h, this.t0i, this.fx);
         krn = 3 * nrd;
-        for (var _i19 = 0; _i19 < nrd; ++_i19) dens[krn + _i19] = fx[this.options.denseComponents[_i19]] * h;
+        for (var _i19 = 0; _i19 < nrd; ++_i19) this.dens[krn + _i19] = this.fx[this.options.denseComponents[_i19]] * h;
         // THE LOOP
         for (var kmi = 1; kmi <= kmit; ++kmi) {
           // compute kmi-th derivative at mid-point
@@ -14457,7 +14502,7 @@ var Solver = /*#__PURE__*/function () {
             }
           }
           krn = (kmi + 4) * nrd;
-          for (var _i22 = 0; _i22 < nrd; ++_i22) dens[krn + _i22] = this.ySafe[kbeg - 1][_i22] * h;
+          for (var _i22 = 0; _i22 < nrd; ++_i22) this.dens[krn + _i22] = this.ySafe[kbeg - 1][_i22] * h;
           if (kmi === kmit) continue;
           // compute differences
           for (var _kk = (kmi + 2) / 2 | 0; _kk <= kc; ++_kk) {
@@ -14486,11 +14531,11 @@ var Solver = /*#__PURE__*/function () {
             }
           }
         }
-        this.interp(dens, kmit);
+        this.interp(this.dens, kmit);
         // estimation of interpolation error
         if (this.options.denseOutputErrorEstimator && kmit >= 1) {
           var errint = 0;
-          for (var _i26 = 0; _i26 < nrd; ++_i26) errint += Math.pow(dens[(kmit + 4) * nrd + _i26] / this.scal[this.options.denseComponents[_i26]], 2);
+          for (var _i26 = 0; _i26 < nrd; ++_i26) errint += Math.pow(this.dens[(kmit + 4) * nrd + _i26] / this.scal[this.options.denseComponents[_i26]], 2);
           errint = Math.sqrt(errint / nrd) * this.errfac[kmit - 1];
           newHoptde = h / Math.max(Math.pow(errint, 1 / (kmit + 4)), 0.01);
           if (errint > 10) {
@@ -14501,14 +14546,14 @@ var Solver = /*#__PURE__*/function () {
             };
           }
         }
-        this.copy(dz, fx);
+        this.copy(dz, this.fx);
       }
       this.copy(y, this.t[0]);
       ++this.nAccept;
       return {
         accept: true,
         hoptde: newHoptde,
-        densef: this.options.denseOutput ? this.contex(x, h, kmit, dens) : this.noDenseOutput
+        densef: this.options.denseOutput ? this.contex(x, h, kmit) : this.noDenseOutput
       };
     }
     /**
@@ -14631,12 +14676,16 @@ var Solver = /*#__PURE__*/function () {
       var components = this.options.denseComponents;
       var segments = this.solutionSegments(x0, y0);
       var s = segments.next();
+      var closed = false;
       return function (x) {
         if (x === undefined) {
           segments.next(false);
+          closed = true;
           return [];
         } else if (x < s.value.x0) {
           throw new Error('cannot use interpolation function in backwards direction');
+        } else if (closed) {
+          throw new Error('cannot use interpolation function after closing integrator');
         } else {
           while (!s.done && x > s.value.x1) s = segments.next();
           var v = [];
@@ -14663,20 +14712,17 @@ var Solver = /*#__PURE__*/function () {
      * the integrated value f(x1). If denseOutput is selected in the options,
      * an interpolation function is provided, valid over the closed interval.
      *
-     * Use of this interface switches on the denseOutput flag. You can still
-     * use denseComponents to restrict the y components for which dense output
-     * data is computed.
-     *
      * @param x initial independent coordinate
      * @param y0 initial value
      * @param xEnd optional end of integration interval
+     * @return generates a sequence of objects containing x0, x1, y and f properties
      */
   }, {
     key: "solutionSegments",
     value:
     /*#__PURE__*/
     _regeneratorRuntime().mark(function solutionSegments(x, y0, xEnd) {
-      var _a, _b, y, dz, i, k, h, xOld, _i27, njAdd, mu, errx, prod, j, hoptde, reject, last, kc, STATE, state, _j2, _j3, result, proceed, _this$newOrderAndStep;
+      var _a, _b, y, i, k, h, xOld, _i27, njAdd, mu, errx, prod, j, hoptde, reject, last, kc, STATE, state, _j2, _j3, result, proceed, _this$newOrderAndStep;
       return _regeneratorRuntime().wrap(function solutionSegments$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -14687,7 +14733,6 @@ var Solver = /*#__PURE__*/function () {
             throw new Error('y0 must be an array sized to the dimension of the problem');
           case 2:
             y = y0.slice();
-            dz = Array(this.n);
             this.hMax = this.options.maxStepSize;
             if (this.options.maxStepSize) {
               this.hMax = this.options.maxStepSize;
@@ -14737,107 +14782,107 @@ var Solver = /*#__PURE__*/function () {
               STATE[STATE["Reject"] = 5] = "Reject";
             })(STATE || (STATE = {}));
             state = STATE.Start;
-          case 23:
+          case 22:
             if (!true) {
-              _context.next = 117;
+              _context.next = 116;
               break;
             }
             this.options.debug && console.log("#".concat(this.nStep, " ").concat(STATE[state], " [").concat(xOld, ",").concat(x, "] h=").concat(h, " k=").concat(k));
             _context.t0 = state;
-            _context.next = _context.t0 === STATE.Start ? 28 : _context.t0 === STATE.BasicIntegrationStep ? 57 : _context.t0 === STATE.ConvergenceStep ? 73 : _context.t0 === STATE.HopeForConvergence ? 84 : _context.t0 === STATE.Accept ? 90 : _context.t0 === STATE.Reject ? 109 : 115;
+            _context.next = _context.t0 === STATE.Start ? 27 : _context.t0 === STATE.BasicIntegrationStep ? 56 : _context.t0 === STATE.ConvergenceStep ? 72 : _context.t0 === STATE.HopeForConvergence ? 83 : _context.t0 === STATE.Accept ? 89 : _context.t0 === STATE.Reject ? 108 : 114;
             break;
-          case 28:
+          case 27:
             if (!(xEnd !== undefined)) {
-              _context.next = 35;
+              _context.next = 34;
               break;
             }
             if (!(0.1 * Math.abs(xEnd - x) <= Math.abs(x) * this.options.uRound)) {
-              _context.next = 31;
+              _context.next = 30;
               break;
             }
-            return _context.abrupt("break", 117);
-          case 31:
+            return _context.abrupt("break", 116);
+          case 30:
             h = this.posneg * Math.min(Math.abs(h), Math.abs(xEnd - x), this.hMax, Math.abs(hoptde));
             if ((x + 1.01 * h - xEnd) * this.posneg > 0) {
               h = xEnd - x;
               last = true;
             }
-            _context.next = 36;
+            _context.next = 35;
             break;
-          case 35:
+          case 34:
             h = this.posneg * Math.min(Math.abs(h), this.hMax, Math.abs(hoptde));
-          case 36:
+          case 35:
             if (this.nStep === 0 || !this.options.denseOutput) {
-              this.copy(dz, this.f(x, y));
+              this.f(x, y, this.dz);
               ++this.nEval;
             }
             // The first and last step
             if (!(this.nStep === 0 || last)) {
-              _context.next = 55;
+              _context.next = 54;
               break;
             }
             this.iPt = 0;
             ++this.nStep;
             _j2 = 1;
-          case 41:
+          case 40:
             if (!(_j2 <= k)) {
-              _context.next = 53;
+              _context.next = 52;
               break;
             }
             kc = _j2;
-            if (this.midex(_j2 - 1, h, x, y, dz)) {
-              _context.next = 47;
+            if (this.midex(_j2 - 1, h, x, y, this.dz)) {
+              _context.next = 46;
               break;
             }
             h *= this.options.stepSizeReductionFactor;
             reject = true;
-            return _context.abrupt("continue", 23);
-          case 47:
+            return _context.abrupt("continue", 22);
+          case 46:
             if (!(_j2 > 1 && this.err <= 1)) {
-              _context.next = 50;
+              _context.next = 49;
               break;
             }
             state = STATE.Accept;
-            return _context.abrupt("continue", 23);
-          case 50:
+            return _context.abrupt("continue", 22);
+          case 49:
             ++_j2;
-            _context.next = 41;
+            _context.next = 40;
             break;
-          case 53:
+          case 52:
             state = STATE.HopeForConvergence;
-            return _context.abrupt("continue", 23);
-          case 55:
+            return _context.abrupt("continue", 22);
+          case 54:
             state = STATE.BasicIntegrationStep;
-            return _context.abrupt("continue", 23);
-          case 57:
+            return _context.abrupt("continue", 22);
+          case 56:
             // basic integration step
             this.iPt = 0;
             if (!(++this.nStep >= this.options.maxSteps)) {
-              _context.next = 60;
+              _context.next = 59;
               break;
             }
             throw new Error('maximum allowed steps exceeded: ' + this.nStep);
-          case 60:
+          case 59:
             kc = k - 1;
             _j3 = 0;
-          case 62:
+          case 61:
             if (!(_j3 < kc)) {
-              _context.next = 71;
+              _context.next = 70;
               break;
             }
-            if (this.midex(_j3, h, x, y, dz)) {
-              _context.next = 68;
+            if (this.midex(_j3, h, x, y, this.dz)) {
+              _context.next = 67;
               break;
             }
             h *= this.options.stepSizeReductionFactor;
             reject = true;
             state = STATE.Start;
-            return _context.abrupt("continue", 23);
-          case 68:
+            return _context.abrupt("continue", 22);
+          case 67:
             ++_j3;
-            _context.next = 62;
+            _context.next = 61;
             break;
-          case 71:
+          case 70:
             // convergence monitor
             if (k === 2 || reject) {
               state = STATE.ConvergenceStep;
@@ -14848,88 +14893,88 @@ var Solver = /*#__PURE__*/function () {
                 state = STATE.Reject;
               } else state = STATE.ConvergenceStep;
             }
-            return _context.abrupt("continue", 23);
-          case 73:
-            if (this.midex(k - 1, h, x, y, dz)) {
-              _context.next = 78;
+            return _context.abrupt("continue", 22);
+          case 72:
+            if (this.midex(k - 1, h, x, y, this.dz)) {
+              _context.next = 77;
               break;
             }
             h *= this.options.stepSizeReductionFactor;
             reject = true;
             state = STATE.Start;
-            return _context.abrupt("continue", 23);
-          case 78:
+            return _context.abrupt("continue", 22);
+          case 77:
             kc = k;
             if (!(this.err <= 1)) {
-              _context.next = 82;
+              _context.next = 81;
               break;
             }
             state = STATE.Accept;
-            return _context.abrupt("continue", 23);
-          case 82:
+            return _context.abrupt("continue", 22);
+          case 81:
             state = STATE.HopeForConvergence;
-            return _context.abrupt("continue", 23);
-          case 84:
+            return _context.abrupt("continue", 22);
+          case 83:
             if (!(this.err > Math.pow(this.nj[k] / 2, 2))) {
-              _context.next = 87;
+              _context.next = 86;
               break;
             }
             state = STATE.Reject;
-            return _context.abrupt("continue", 23);
-          case 87:
+            return _context.abrupt("continue", 22);
+          case 86:
             kc = k + 1;
-            if (!this.midex(kc - 1, h, x, y, dz)) {
+            if (!this.midex(kc - 1, h, x, y, this.dz)) {
               h *= this.options.stepSizeReductionFactor;
               reject = true;
               state = STATE.Start;
             } else if (this.err > 1) state = STATE.Reject;else state = STATE.Accept;
-            return _context.abrupt("continue", 23);
-          case 90:
-            result = this.acceptStep(kc, h, x, y, dz);
+            return _context.abrupt("continue", 22);
+          case 89:
+            result = this.acceptStep(kc, h, x, y, this.dz);
             state = STATE.Start;
             hoptde = (_a = result.hoptde) !== null && _a !== void 0 ? _a : hoptde;
             if (result.accept) {
-              _context.next = 97;
+              _context.next = 96;
               break;
             }
             h = hoptde;
             reject = true;
-            return _context.abrupt("continue", 23);
-          case 97:
+            return _context.abrupt("continue", 22);
+          case 96:
             // Move forward
             xOld = x;
             x += h;
-            _context.next = 101;
+            _context.next = 100;
             return {
               x0: xOld,
               x1: x,
-              y: y,
+              y: y.slice(),
               f: (_b = result.densef) !== null && _b !== void 0 ? _b : this.noDenseOutput
             };
-          case 101:
+          case 100:
             proceed = _context.sent;
             if (!(proceed === false)) {
-              _context.next = 104;
+              _context.next = 103;
               break;
             }
             return _context.abrupt("return");
-          case 104:
+          case 103:
             _this$newOrderAndStep = this.newOrderAndStepSize(reject, kc, k, h);
             k = _this$newOrderAndStep.k;
             h = _this$newOrderAndStep.h;
             reject = false;
-            return _context.abrupt("continue", 23);
-          case 109:
+            return _context.abrupt("continue", 22);
+          case 108:
             k = Math.min(k, kc, this.options.maxExtrapolationColumns - 1);
             if (k > 2 && this.w[k - 1] < this.w[k] * this.options.stepSizeFac3) k -= 1;
             ++this.nReject;
             h = this.posneg * this.hh[k - 1];
             reject = true;
             state = STATE.BasicIntegrationStep;
-          case 115:
-            _context.next = 23;
+          case 114:
+            _context.next = 22;
             break;
-          case 117:
+          case 116:
           case "end":
             return _context.stop();
         }
@@ -14990,7 +15035,8 @@ Solver.defaults = {
   stepSafetyFactor2: 0.94,
   relativeTolerance: 1e-5,
   absoluteTolerance: 1e-5,
-  debug: false
+  debug: false,
+  rawFunction: false
 };
 
 },{}]},{},[2,1])(2)

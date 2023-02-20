@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "es2015",
         "noImplicitAny": true,
+        "strictNullChecks": true,
         "moduleResolution": "node",
         "module": "CommonJS"
     },

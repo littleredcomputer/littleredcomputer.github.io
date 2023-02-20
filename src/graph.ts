@@ -10,7 +10,7 @@ export class Graph {
   y: ScaleLinear<number, number>
   xAxis: d3.Axis<number>
   yAxis: d3.Axis<number>
-  svg: d3.Selection<BaseType, {}, HTMLElement, any>
+  svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
   line: d3.Line<[number, number]>
   wrap_pi: boolean = false
   points: boolean = false

@@ -11,7 +11,7 @@
   "dependencies": {
     "d3": "^7.4.0",
     "@types/d3": "^7.4.0",
-    "odex": "^3.0.0-rc1"
+    "odex": "3.0.0-rc.3"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",
@@ -19,7 +19,7 @@
     "browserify": "^17.0.0",
     "gulp": "^4.0.0",
     "gulp-typescript": "^6.0.0-alpha.1",
-    "typescript": "^4.7.4",
+    "typescript": "^4.9.5",
     "vinyl-source-stream": "^2.0.0"
   }
 }
